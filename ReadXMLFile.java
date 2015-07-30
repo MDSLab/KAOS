@@ -59,6 +59,9 @@ public class ReadXMLFile
 					System.out.println("Label : "+ eElement.getElementsByTagName("label").item(0).getTextContent());
 					no.setLabel(eElement.getElementsByTagName("label").item(0).getTextContent());
 					
+					System.out.println("Probability : "+ eElement.getElementsByTagName("probability").item(0).getTextContent());
+					no.setProb(eElement.getElementsByTagName("probability").item(0).getTextContent());
+					
 					System.out.println("B(h,k,i) : "+ eElement.getElementsByTagName("matrix").item(0).getTextContent());
 					no.setMatrix(eElement.getElementsByTagName("matrix").item(0).getTextContent());
 					

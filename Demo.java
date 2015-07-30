@@ -512,14 +512,16 @@ public class Demo
    
    }//end calculateB
      
-    /** Calculate the solution of the Cluster Model 
+    
+      
+    /** Calculate the solution of the Cluster Model in Cooperation/Competition Mode
     **/  
-   public void solution_()
+   public void solutionCC()
    {
    	
    	 double somma=0;
    	 
-   	 
+   	 /*
    	  double a=0.0476;
       for (int i=0;i<5;i++)
       {
@@ -538,16 +540,11 @@ public class Demo
    	  }
    	  somma2=1-somma2;
    	  
-   	  f.add(10,somma2);
+   	  f.set(10,somma2);
    	 
+   	*/
+   
    	
-   	for (int i=0;i<nCluster;i++)
-   	{
-   	 somma=somma+f.get(i);
-   	 System.out.println(f.get(i));
-   	}
-   	System.out.println("Somma iniziale: "+somma);
-   	somma=0;
    	
    	
    	
@@ -579,22 +576,9 @@ public class Demo
       
       	emme[tempo]=emmeF(nCluster);
     	
-       
-		/*
-		if ( (Math.abs(h-k)>=mu) && (h>n+1) && (k>n+1) )	
+      
 		
-		{
-		   resetEta(nCluster);
-		}
-		
-		if ( (Math.abs(h-k)>=mu) && (h<n+1) && (k<n+1) )	
-		
-		{
-		   resetEta(nCluster);
-		}
-		*/
-		
-        //calculateB(tempo);
+        calculateB(tempo);
 		
 		  
            for (int i=0;i<nCluster;i++)
@@ -655,11 +639,11 @@ public class Demo
                }
                 System.out.println("\n\nSomma Finale: "+somma+"\n\n");
                 
-                for(int i=0; i<11; i++) 
+                for(int i=0; i<nCluster; i++) 
 		{ 
-			for(int h=0; h<11; h++) 
+			for(int h=0; h<nCluster; h++) 
 			{ 
-				for(int k=0; k<11; k++) 
+				for(int k=0; k<nCluster; k++) 
 				{
 					
 					
@@ -673,7 +657,7 @@ public class Demo
            String text="Graphic";
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
-       cb.chart(nCluster,ff);
+      cb.chart(nCluster,ff);
    }
    
    
@@ -2438,6 +2422,12 @@ public void consent()
 							    cooperation();
 							 }
 				    }
+				    else
+				    if ((hId==-1) && (iId==-1) && (nCluster>0))
+				    {
+				      mode="dolfin";
+				    }
+				    
 				}
 				/*
 				else
@@ -3007,7 +2997,7 @@ public void consent()
         (Exception exxx) 
         {
         	
-        	System.out.println(values.size()+" eccezione viewtableF"+exxx);
+        	System.out.println(values.size()+" eccezione viewtableF ->"+exxx);
         }
         
         
@@ -3641,10 +3631,10 @@ public void consent()
 		final long serialVersionUID = 1L;
 		
 		JPopupMenu menu = new JPopupMenu();
-		ImageIcon iconEdit=new ImageIcon ("icons/edit.png");
-		ImageIcon iconRemove=new ImageIcon ("icons/remove.png");
-		ImageIcon iconSelectAll=new ImageIcon ("icons/selectAll.png");
-		ImageIcon iconSelf=new ImageIcon ("icons/self.png");
+		final ImageIcon iconEdit=new ImageIcon ("icons/edit.png");
+		final ImageIcon iconRemove=new ImageIcon ("icons/remove.png");
+		final ImageIcon iconSelectAll=new ImageIcon ("icons/selectAll.png");
+		final ImageIcon iconSelf=new ImageIcon ("icons/self.png");
 		
 		//GraphLayoutCache cache=graph.getGraphLayoutCache();
 		if (cell != null) 
@@ -4183,15 +4173,15 @@ public void consent()
         
         JMenuBar menubar = new JMenuBar();
         
-        ImageIcon iconNew = new ImageIcon("icons/exit1.png");
-        ImageIcon iconOpen = new ImageIcon("icons/open1.png");
-        ImageIcon iconSave = new ImageIcon("icons/save1.png");
-        ImageIcon iconPng = new ImageIcon("icons/image.png");
-        ImageIcon iconExit = new ImageIcon();
-        ImageIcon iconPrint = new ImageIcon("icons/print1.png");
+        final ImageIcon iconNew = new ImageIcon("icons/exit1.png");
+        final ImageIcon iconOpen = new ImageIcon("icons/open1.png");
+        final ImageIcon iconSave = new ImageIcon("icons/save1.png");
+        final ImageIcon iconPng = new ImageIcon("icons/image.png");
+        final ImageIcon iconExit = new ImageIcon();
+        final ImageIcon iconPrint = new ImageIcon("icons/print1.png");
 
 		//Menu File
-        JMenu fileMenu = new JMenu("File");
+       final  JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         
         //Menu Edit
@@ -4199,17 +4189,17 @@ public void consent()
         //editMenu.setMnemonic(KeyEvent.VK_F);
         
          //Menu View
-        JMenu viewMenu = new JMenu("View");
+         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_F);
 
-		tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Data Var", null, KeyEvent.VK_C));
+	 tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Data Var", null, KeyEvent.VK_C));
 		
-		tabProbabMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Probability", null, KeyEvent.VK_C));
+	 tabProbabMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Probability", null, KeyEvent.VK_C));
                 
         tabPropMi = new JCheckBoxMenuItem (new MenuItemAction("Global Var", null, KeyEvent.VK_C));
 
- 		edgeLabelMi = new JCheckBoxMenuItem (new MenuItemAction("Show Labels", null, KeyEvent.VK_C));
-                
+ 	 edgeLabelMi = new JCheckBoxMenuItem (new MenuItemAction("Show Labels", null, KeyEvent.VK_C));
+      
         colorMi = new JCheckBoxMenuItem (new MenuItemAction("Change Colors", null, KeyEvent.VK_C));
         
         resizeMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Resizing", null, KeyEvent.VK_C));
@@ -4223,20 +4213,20 @@ public void consent()
 
        
 
-        JMenuItem openMi = new JMenuItem(new MenuItemAction("Open", iconOpen, 
+       final  JMenuItem openMi = new JMenuItem(new MenuItemAction("Open", iconOpen, 
                 KeyEvent.VK_O));
 
-        JMenuItem saveMi = new JMenuItem(new MenuItemAction("Save", iconSave, 
+       final  JMenuItem saveMi = new JMenuItem(new MenuItemAction("Save", iconSave, 
                 KeyEvent.VK_S));
-        JMenuItem saveAsMi = new JMenuItem(new MenuItemAction("Save As...", iconSave, 
-                KeyEvent.VK_S));
-                
-        JMenuItem exportPngMi = new JMenuItem(new MenuItemAction("Export PNG", iconPng, 
-                KeyEvent.VK_S));
-        JMenuItem printMi = new JMenuItem(new MenuItemAction("Print", iconPrint, 
+       final  JMenuItem saveAsMi = new JMenuItem(new MenuItemAction("Save As...", iconSave, 
                 KeyEvent.VK_S));
                 
-        JMenuItem newMi = new JMenuItem(new MenuItemAction("Close", iconNew, 
+         final JMenuItem exportPngMi = new JMenuItem(new MenuItemAction("Export PNG", iconPng, 
+                KeyEvent.VK_S));
+      final   JMenuItem printMi = new JMenuItem(new MenuItemAction("Print", iconPrint, 
+                KeyEvent.VK_S));
+                
+     final    JMenuItem newMi = new JMenuItem(new MenuItemAction("Close", iconNew, 
                 KeyEvent.VK_N));
 
         JMenuItem exitMi = new JMenuItem("Exit", iconExit);
@@ -4309,8 +4299,15 @@ public void consent()
                 	//	System.out.println("matrix completa caricata da xml ");
                 		//	System.out.println(parola);
                 			nCluster=clust.size();
-                			setF(nCluster);
-
+                			//setF(nCluster);
+                			tabProbabMi.setVisible(true);
+                	f = new Vector<Double>(nCluster);
+					for (int j=0;j<nCluster;j++)
+					{
+  						double p = Double.parseDouble(clust.get(j).getProb());
+  							//p=round(p,6);
+  	 				   f.add(p);					  
+					}
                 			
                 			 unParsing(parola,nCluster);
                 	tableData.setValueAt(nCluster, 1, 1);   
@@ -4801,37 +4798,38 @@ public void consent()
        
        
        
-       	ImageIcon sel = new ImageIcon("icons/sel.png");
+       	final ImageIcon sel = new ImageIcon("icons/sel.png");
     	
-    	ImageIcon nodo = new ImageIcon("icons/nodo.png");
+    	final ImageIcon nodo = new ImageIcon("icons/nodo.png");
     	
-    	ImageIcon rect = new ImageIcon("icons/rect.png");
+    	final ImageIcon rect = new ImageIcon("icons/rect.png");
       
-    	ImageIcon triangle = new ImageIcon("icons/triangle.png");
+    	final ImageIcon triangle = new ImageIcon("icons/triangle.png");
       
-        ImageIcon freccia= new ImageIcon("icons/freccia.png");
+        final ImageIcon freccia= new ImageIcon("icons/freccia.png");
         
-         ImageIcon curva = new ImageIcon("icons/curva.png");
+         final ImageIcon curva = new ImageIcon("icons/curva.png");
         
         
-        ImageIcon canc = new ImageIcon("icons/canc.png");
+        final ImageIcon canc = new ImageIcon("icons/canc.png");
         
-        ImageIcon select = new ImageIcon("icons/select.png");
+        final ImageIcon select = new ImageIcon("icons/select.png");
         
-        ImageIcon zoomp = new ImageIcon("icons/zoomp.png");
-        ImageIcon zoomm = new ImageIcon("icons/zoomm.png");
+        final ImageIcon zoomp = new ImageIcon("icons/zoomp.png");
+        final ImageIcon zoomm = new ImageIcon("icons/zoomm.png");
         
-         ImageIcon undo = new ImageIcon("icons/undo.png");
-        ImageIcon redo= new ImageIcon("icons/redo.png");
+         final ImageIcon undo = new ImageIcon("icons/undo.png");
+       
+        final ImageIcon redo= new ImageIcon("icons/redo.png");
         
-         ImageIcon piu= new ImageIcon("icons/piu.png");
-         ImageIcon meno= new ImageIcon("icons/meno.png");
+         final ImageIcon piu= new ImageIcon("icons/piu.png");
+         final ImageIcon meno= new ImageIcon("icons/meno.png");
         
-         ImageIcon go= new ImageIcon("icons/go.png");
+         final ImageIcon go= new ImageIcon("icons/go.png");
          
-         ImageIcon bar= new ImageIcon("icons/bar.png");
+         final ImageIcon bar= new ImageIcon("icons/bar.png");
          
-         ImageIcon curve= new ImageIcon("icons/curve.png");
+         final ImageIcon curve= new ImageIcon("icons/curve.png");
         
         
  		JButton sel_but = new JButton(sel);      
@@ -5344,9 +5342,19 @@ public void consent()
 		            	   	  panelProp.validate();
 		            	   	  
 		            	   	}
+		            	   	
+		            	   	if (mode.equals("dolfin")==true)
+		            	   	{
+		            	   	solutionCC();
+		            	   	}
+		            	   	else
+		            	   	{
             		        solution();
+            		        }
             		        
             		       viewTableF(f);
+            		       
+            		       
             		       if(scrollPaneProbab!=null) 
             		         {
             		           scrollPaneProbab.setVisible(true);
@@ -6041,17 +6049,19 @@ public void consent()
 	 	* @param id memory id of the cluster
 	 	
 	 	* @param label label of the cluster.
+	 	* @param prob  cluster probability.
 	 
 	 	* @param matrix 2D matrix  field of the cluster
 	    */
         
-        public void add_Cluster(String id,String label, String matrix)//inserisce il nodo nel vector clust
+        public void add_Cluster(String id,String label, String prob, String matrix)//inserisce il nodo nel vector clust
         
        {
           Cluster nodo=new Cluster();
           nodo.setId(id);
           
           nodo.setLabel(label);
+          nodo.setProb(prob);
           nodo.setMatrix(matrix);
          
           clust.add(nodo);
@@ -6097,7 +6107,7 @@ public void consent()
           	mat=parseMatrix(B,i,nCluster,nCluster);
           	String id=String.valueOf(i);
           	
-            add_Cluster(id,labels.get(i),mat);
+            add_Cluster(id,labels.get(i),String.valueOf(f.get(i)),mat);
           }
         }
         

@@ -59,6 +59,11 @@ public class WriteXMLFile
 			Element matrix = doc.createElement("matrix");
 			matrix.appendChild(doc.createTextNode(n.get(i).getMatrix()));
 			node.appendChild(matrix);
+			
+				// probability elements
+			Element prob = doc.createElement("probability");
+			prob.appendChild(doc.createTextNode(n.get(i).getProb()));
+			node.appendChild(prob);
 		
 	    }
 

@@ -4,6 +4,7 @@ public class Cluster
 	private String id; 
     private String label;
     private String matrix;
+    private String prob;
     
     public Cluster() {}
 
@@ -11,7 +12,8 @@ public class Cluster
     {
     	this.id = id;
     	this.label = label;
-    	this.matrix = matrix;   	
+    	this.matrix = matrix;   
+    	this.prob = prob;	
     }
 
     public void setId(String id) {
@@ -26,7 +28,9 @@ public class Cluster
 		this.matrix = matrix;
 	}
 
-
+    public void setProb(String prob) {
+		this.prob = prob;
+	}
 	
 	
 	public String getId()
@@ -44,10 +48,15 @@ public class Cluster
 	{
 		return this.matrix;
     }
+    
+    public String  getProb()
+	{
+		return this.prob;
+    }
 
 
 	@Override
     public String toString() {
-            return "<" + id + ", " + label +", " + matrix +">";
+            return "<" + id + ", " + label +", " + prob + ", " + matrix +">";
     }
 }
