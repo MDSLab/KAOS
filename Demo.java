@@ -10,9 +10,6 @@ import DeMeo.WriteXMLFile;
 import DeMeo.ReadXMLFile;
 import DeMeo.ChartBar;
 import DeMeo.GraphCurve;
-
-//import org.jgrapht.Graph;
-
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import java.awt.event.*;
@@ -662,7 +659,7 @@ public class Demo
    
    
    
-    /** Calculate the solution of the Cluster Model 
+    /** Calculate the solution of the Cluster Model in User Defined Mode
     **/  
    public void solution()
    {
@@ -1275,7 +1272,7 @@ public void userDefined()
   if (nCluster>0)
   {
    
-   resetB(nCluster);
+  // resetB(nCluster);
    
  
    
@@ -1340,7 +1337,274 @@ public void userDefined()
 
 }
 
+/* Set the cooperation/competition interaction mode between the clusters
+*/
+
 public void cooperation()
+{
+  MyEdge edgess;
+
+  mode="Cooperation/Competition";
+  
+    double y=1;
+  	double z=hId+1;
+  
+ System.out.println("cooop: "+coop);
+ 
+ if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilità esterne ad h e i
+ {
+  if (nCluster>0)
+  {
+  	
+  	coop= y/z;
+    coop=round(coop,4);
+  }
+  else
+  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+ 	
+ 	if (hId<iId) //nulli a destra di h
+    {
+		  if (nCluster>0)
+		  {
+		  	coop= y/z ;
+		    coop=round(coop,4);
+		  }
+		  else
+		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+		  
+	   for (int i=0;i<=hId;i++)
+	   {
+	     B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+	   for (int i=hId+1;i<nCluster;i++)
+	   {
+	     B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	   
+	   }
+    }
+    else //nulli a sinistra
+    if (hId>iId)
+    {
+    	if (nCluster>0)
+		  {
+		  	double a=1;
+		  	double kk=nCluster-hId;
+		  	coop= ( a / kk ) ;
+		    coop=round(coop,4);
+		  }
+		  else
+		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+    	
+    	for (int i=0;i<hId;i++)
+	   {
+	   	B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	     
+	   }
+	   for (int i=hId;i<nCluster;i++)
+	   {
+	     
+	   	B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+    
+    }
+     /*
+  for (int i=0;i<nCluster;i++)
+   {
+   	if (i<=iId)
+   	{
+   	B[hId][i][iId]=coop;
+   	table.setValueAt(String.valueOf(coop),i,1);
+    }
+    else
+    {
+      B[hId][i][iId]=0;
+   	   table.setValueAt("0.0",i,1);
+    }
+   }
+   */
+  
+  String s1=String.valueOf(hId);
+  
+  scrollPaneProp.setVisible(true);
+  
+  if (edgePainted()==true)
+		{ removeAllEdges();}
+  
+ // removeAllEdges();
+ 
+   for (int i=0;i<nCluster;i++)
+   {
+   	
+    
+    	String s2=String.valueOf(i);
+        if(i!=hId)
+        {
+   								g.getModel().beginUpdate();
+				               
+				                  edgess=graph.addEdge(s1, s2);
+				                 
+				                    if (hId<iId)  //nulli a destra
+					                {  
+						                if (i<hId)
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        				    }
+		        				    else //nulli a sinistra
+		        				    if (hId>iId) 
+		        				    {
+		        				    	if (i<hId)
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        				    
+		        				    
+		        				    }
+	        					  
+	        					  freccia_but.setSelected(true);
+	        					  
+	        				   g.getModel().endUpdate();
+	     }
+   
+   }
+ }
+ else
+ if (Math.abs(iId-hId)>mu) //COOPERATION MODE - probabilità interne ad h e i
+ {
+	  
+ 	
+ 	if (hId<iId) //nulli interni 
+    {
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (nCluster-Math.abs(iId-hId)) ) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+	   for (int i=0;i<nCluster;i++)
+	   {
+	   	if ((i<=hId) || (i>iId))
+	   	{
+	     B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	    }
+	     else
+	   {
+	     B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	   }
+	   
+	   }
+    }
+    else //nulli esterni
+    if (hId>iId) 
+    {
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (Math.abs(hId-iId)+1 )) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+    	
+       for (int i=0;i<nCluster;i++)
+	   {
+	   	if ((i<iId) || (i>hId))
+	   	{
+	       B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	    }
+	     else
+	     {
+	   
+	   	   B[i][hId][iId]=coop;
+	   	   table.setValueAt(String.valueOf(coop),i,1);
+	     }
+	   	
+	   }
+    
+    }
+
+  
+  String s1=String.valueOf(hId);
+  
+  scrollPaneProp.setVisible(true);
+  
+  if (edgePainted()==true)
+		{ removeAllEdges();}
+  
+ // removeAllEdges();
+ 
+   for (int i=0;i<nCluster;i++)
+   {
+   	
+    
+    	String s2=String.valueOf(i);
+        if(i!=hId)
+        {
+   								g.getModel().beginUpdate();
+				               
+				                  edgess=graph.addEdge(s1, s2);
+				                 
+				                    if (hId<iId)  //nulli interni 
+					                {  
+						                if ((i<hId) || (i>iId))
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        				    }
+		        				    else //nulli esterni
+		        				    if (hId>iId) 
+		        				    {
+		        				    	if ((i<iId) || (i>hId))
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        				    
+		        				    
+		        				    }
+	        					  
+	        					  freccia_but.setSelected(true);
+	        					  
+	        				   g.getModel().endUpdate();
+	     }
+   
+   }
+ }
+ 
+   
+   
+}//end cooperation
+
+
+
+/* Set the cooperation/competition interaction mode between the clusters
+*/
+
+public void cooperation_()
 {
   MyEdge edgess;
 
@@ -2385,9 +2649,11 @@ public void consent()
 				 
 				if (selected.equals("User Defined"))
 				{
-					if ((hId!=-1) && (iId!=-1))
+					resetB(nMax);
+					 System.out.println("user defined");
+					if ((hId!=-1) && (iId!=-1) && (nCluster>0))
 					{
-					  System.out.println("user defined");
+					 
 					  if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==false)
 					  {
 					  	g.getModel().beginUpdate();
@@ -2404,31 +2670,39 @@ public void consent()
 				else
 				if (selected.equals("Coop / Comp"))
 				{
-				
-					if ((hId!=-1) && (iId!=-1))
+				  
+				//	if ((hId!=-1) && (iId!=-1))
+				    if ((hId==-1) && (iId==-1) && (nCluster>0))
 					{
-							System.out.println("cooperazione/competizione");
+							System.out.println("cooperazione/competizione *");
 							if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==false)
 							{
-							
+							  
 					 
-					 
+					             if ((hId!=-1) && (iId!=-1))
+					             {
 					 					  	g.getModel().beginUpdate();
 					 					  	if (edgePainted()==true)
-								 { removeAllEdges();}
+								            { removeAllEdges();}
 							 					  	
-							    //  removeAllEdges();
-							    g.getModel().endUpdate();
-							    cooperation();
+							                 g.getModel().endUpdate();
+							     }
+							      
 							 }
-				    }
+					 }
+		    	
+				    
+				    /*
 				    else
 				    if ((hId==-1) && (iId==-1) && (nCluster>0))
 				    {
 				      mode="dolfin";
+				      System.out.println(mode);
 				    }
+				    */
 				    
-				}
+				}//end cooperation/competition
+				
 				/*
 				else
 				if (selected.equals("Cons / Diss"))
@@ -2454,7 +2728,9 @@ public void consent()
 				}
 				*/
 			}
-		});
+		});//end combobox1
+		
+		
 		
 		//panelVar=new JPanel(new BorderLayout());
 	//	panelVar.setBorder(new TitledBorder("Properties"));
@@ -5343,13 +5619,14 @@ public void consent()
 		            	   	  
 		            	   	}
 		            	   	
-		            	   	if (mode.equals("dolfin")==true)
+		            	    if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
 		            	   	{
-		            	   	solutionCC();
+		            	   	  solutionCC();
 		            	   	}
 		            	   	else
+		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		            	   	{
-            		        solution();
+            		           solution();
             		        }
             		        
             		       viewTableF(f);
@@ -5681,6 +5958,7 @@ public void consent()
 		             			  
 		             			   cell1On=true;
 		             			   hId=idd;
+		             			   System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 		             			   fillCluster(hCol);//fillcolor
 		             			   /*
 		             			   for (int i=0;i<nCluster;i++)
@@ -5735,6 +6013,7 @@ public void consent()
 		             			 {
 		             			 	iId=idd;
 		             			 	cell2On=true;
+		             			 	/*
 		             			 	//passo la colonna del cluster i selezionato e controllo i valori: se sono tutti uguali è cooperaz 
 		             			 	if (isCooperation()==true)
 		             			 	{
@@ -5744,7 +6023,8 @@ public void consent()
 		             			 	{
 		             			 	mode="User Defined"; //competition o User defined
 		             			    }
-		             			 	tableData.setValueAt(mode, 2, 1);
+		             			    */
+		             			 	//tableData.setValueAt(mode, 2, 1);
 		             			 	
 		             			 	mov(cells,-dx/4,-dy/4);
 		             			 	fillCluster(iCol);//yellow
@@ -5768,7 +6048,15 @@ public void consent()
              			  			splitPanel.validate();
              			  			
              			  			sessionOpen=true;
-		             			 	
+		             			 	if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
+		             			 	{
+		             			 	  cooperation();
+		             			 	}
+		             			 	else
+		             			 	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
+		             			 	{
+		             			 	  userDefined();
+		             			 	}
 		             			 
 		             			 }
 		 					     }
