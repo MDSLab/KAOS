@@ -128,10 +128,10 @@ public class Demo
 	public int aPos; //posizione dell' edge  selezionato all'interno del vector a
 	public String oldLabel;
 	public boolean labelChanged;
-	public static final String fillcolor = "#D3D3D3";//colore turchese di background cella con probabilità modificata !=0
-	public static double sizeChangedCell;//dimensione cella proporzionale alla probabilità inserita
+	public static final String fillcolor = "#D3D3D3";//colore turchese di background cella con probabilita modificata !=0
+	public static double sizeChangedCell;//dimensione cella proporzionale alla probabilita inserita
 	public static JPanel panelVar; //pannello di destra contenente la tabella VARIABILI GLOBALI mu, eta0, beta0
-	public static JPanel panelProp; //pannello di destra contenente le tabelle proprietà	
+	public static JPanel panelProp; //pannello di destra contenente le tabelle proprieta	
 	JCheckBoxMenuItem resizeMi;
 	JCheckBoxMenuItem tabProbabMi,tabVarMi,tabPropMi,colorMi,edgeLabelMi;	
 	public String mode;//cooperation/competition, consent/dissent o User Defined		
@@ -151,14 +151,14 @@ public class Demo
 	public static double df[];
 	
 	
-	public static boolean sessionOpen; // se true indica che la sessione è aperta, hId e iId assegnati
+	public static boolean sessionOpen; // se true indica che la sessione e aperta, hId e iId assegnati
 	public boolean tabVarOpen; 
 	public static JTable tableData;
 	public static JScrollPane scrollPaneVar;
    public  static JScrollPane scrollPaneProp,scrollPaneCol,scrollPaneProbab,scrollPaneData;
    public static JSplitPane splitPanel,mainPanel;
    public static int nCluster;
-   public static double  coop; //valore di probabilità comune a tutti i clusters in modalità cooperation
+   public static double  coop; //valore di probabilita comune a tutti i clusters in modalita cooperation
    public static int dist; // di quanto si sposta sul raggio una cella selezionata
    public static int r,x0,y0,iId,hId;
    public static int diametro; //dimensione del diametro del cluster
@@ -267,11 +267,11 @@ public class Demo
 		
 		
 		
-		for(int i=0; i<nCluster; i++) //1° indice di matrice = 
+		for(int i=0; i<nCluster; i++) //1  indice di matrice = 
 		{
-		for(int h=0; h<nCluster; h++) //2° indice di riga
+		for(int h=0; h<nCluster; h++) //2  indice di riga
 		{
-		for(int k=0; k<nCluster; k++) //3° indice colonna
+		for(int k=0; k<nCluster; k++) //3  indice colonna
 		{
 			if  ( (h==k) && (h==i) )
 			{ B[i][h][k]= 1; } 
@@ -398,11 +398,11 @@ public class Demo
 		
 		
 		
-		for(int i=0; i<nCluster; i++) //1° indice di matrice = 
+		for(int i=0; i<nCluster; i++) //1  indice di matrice = 
 		{
-		for(int h=0; h<nCluster; h++) //2° indice di riga
+		for(int h=0; h<nCluster; h++) //2  indice di riga
 		{
-		for(int k=0; k<nCluster; k++) //3° indice colonna
+		for(int k=0; k<nCluster; k++) //3  indice colonna
 		{
 			if  ( (h==k) && (h==i) )
 			{ B[i][h][k]= 1; } 
@@ -1351,7 +1351,7 @@ public void cooperation()
   
  System.out.println("cooop: "+coop);
  
- if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilità esterne ad h e i
+ if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilita esterne ad h e i
  {
   if (nCluster>0)
   {
@@ -1360,7 +1360,7 @@ public void cooperation()
     coop=round(coop,4);
   }
   else
-  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
  	
  	if (hId<iId) //nulli a destra di h
     {
@@ -1370,7 +1370,7 @@ public void cooperation()
 		    coop=round(coop,4);
 		  }
 		  else
-		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
 		  
 	   for (int i=0;i<=hId;i++)
 	   {
@@ -1396,7 +1396,7 @@ public void cooperation()
 		    coop=round(coop,4);
 		  }
 		  else
-		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
     	
     	for (int i=0;i<hId;i++)
 	   {
@@ -1483,7 +1483,7 @@ public void cooperation()
    }
  }
  else
- if (Math.abs(iId-hId)>mu) //COOPERATION MODE - probabilità interne ad h e i
+ if (Math.abs(iId-hId)>mu) //COOPERATION MODE - probabilita interne ad h e i
  {
 	  
  	
@@ -1495,7 +1495,7 @@ public void cooperation()
 	    //coop=round(coop,3);
 	  }
 	  else
-	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
 	   for (int i=0;i<nCluster;i++)
 	   {
 	   	if ((i<=hId) || (i>iId))
@@ -1520,7 +1520,7 @@ public void cooperation()
 	    //coop=round(coop,3);
 	  }
 	  else
-	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
     	
        for (int i=0;i<nCluster;i++)
 	   {
@@ -1615,7 +1615,7 @@ public void cooperation_()
   
  System.out.println("cooop: "+coop);
  
- if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilità esterne ad h e i
+ if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilita esterne ad h e i
  {
   if (nCluster>0)
   {
@@ -1624,7 +1624,7 @@ public void cooperation_()
     coop=round(coop,4);
   }
   else
-  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
  	
  	if (hId<iId) //nulli a destra di h
     {
@@ -1634,7 +1634,7 @@ public void cooperation_()
 		    coop=round(coop,4);
 		  }
 		  else
-		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
 		  
 	   for (int i=0;i<=hId;i++)
 	   {
@@ -1660,7 +1660,7 @@ public void cooperation_()
 		    coop=round(coop,4);
 		  }
 		  else
-		  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
     	
     	for (int i=0;i<hId;i++)
 	   {
@@ -1747,7 +1747,7 @@ public void cooperation_()
    }
  }
  else
- if (Math.abs(iId-hId)>mu) //COOPERATION MODE - probabilità interne ad h e i
+ if (Math.abs(iId-hId)>mu) //COOPERATION MODE - probabilita interne ad h e i
  {
 	  
  	
@@ -1759,7 +1759,7 @@ public void cooperation_()
 	    //coop=round(coop,3);
 	  }
 	  else
-	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
 	   for (int i=0;i<nCluster;i++)
 	   {
 	   	if ((i<=hId) || (i>iId))
@@ -1784,7 +1784,7 @@ public void cooperation_()
 	    //coop=round(coop,3);
 	  }
 	  else
-	  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
     	
        for (int i=0;i<nCluster;i++)
 	   {
@@ -1877,7 +1877,7 @@ public void consent()
     //coop=round(coop,3);
   }
   else
-  {coop=1;} //(1/nCluster);//probabilità di ogni singolo cluster
+  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
   
  System.out.println("cooop: "+coop);
   
@@ -2084,7 +2084,7 @@ public void consent()
   public void resizeCluster(int r,double valore)
   {
     	sessionOpen=true;
-      //se la probabilità inserita nella tabella è diversa da 0 cambia colore e dimensioni della cella
+      //se la probabilita inserita nella tabella e diversa da 0 cambia colore e dimensioni della cella
            if ((valore>=0) && (valore<=1) && (nCluster<10))
             {
             
@@ -2130,7 +2130,7 @@ public void consent()
 			    {
 			      
 			      double prob_in = (100/nCluster)*(0.01);
-			       sizeChangedCell=diametro- ( 100*(prob_in - valore) ); //varia le dimensioni della cella in funzione della probabilità inserita
+			       sizeChangedCell=diametro- ( 100*(prob_in - valore) ); //varia le dimensioni della cella in funzione della probabilita inserita
 			        mxGeometry geo = (mxGeometry) c.getGeometry().clone();
 			        mxRectangle bounds = g.getView().getState(c).getLabelBounds();
 			        geo.setHeight( sizeChangedCell); //10 is for padding
@@ -4410,7 +4410,7 @@ public void consent()
 
     
         
-        //crea il pannello delle proprietà posto a destra
+        //crea il pannello delle proprieta posto a destra
         splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true,panelVar, panelProp);
        
        splitPanel.setDividerSize(3);
@@ -4422,7 +4422,7 @@ public void consent()
         
         
        
-       // panelVar.setVisible(false); nasconde il pannello con le tabelle proprietà
+       // panelVar.setVisible(false); nasconde il pannello con le tabelle proprieta
 	
         mainPanel.setContinuousLayout(true);
         mainPanel.setOneTouchExpandable(true);
@@ -4831,14 +4831,14 @@ public void consent()
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            		if(tabProbabMi.isSelected()==false ) //è già selezionato, premo e lo deseleziono
+            		if(tabProbabMi.isSelected()==false ) //e gia selezionato, premo e lo deseleziono
             		{
             			//System.out.println("chiudere panelllo:");
             			if(scrollPaneProbab!=null)
             		  	{ scrollPaneProbab.setVisible(false);}
             		}
             		else
-            	   if(tabProbabMi.isSelected()==true ) // non è selezionato, premo e lo seleziono per aprire la tabella
+            	   if(tabProbabMi.isSelected()==true ) // non e selezionato, premo e lo seleziono per aprire la tabella
             	   {
 		            	if (nCluster!=0)
 		            	{
@@ -4892,14 +4892,14 @@ public void consent()
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            		if(tabPropMi.isSelected()==false ) //è già selezionato, premo e lo deseleziono
+            		if(tabPropMi.isSelected()==false ) //e gia selezionato, premo e lo deseleziono
             		{
             			//System.out.println("chiudere panelllo:");
             			if(scrollPaneVar!=null)
             		  	{ scrollPaneVar.setVisible(false);}
             		}
             		else
-            	   if(tabPropMi.isSelected()==true ) // non è selezionato, premo e lo seleziono per aprire la tabella
+            	   if(tabPropMi.isSelected()==true ) // non e selezionato, premo e lo seleziono per aprire la tabella
             	   {
             	   	
             	   	
@@ -5698,7 +5698,7 @@ public void consent()
 
         });
         
-            //premuto per mostrare il grafico a barre della soluzione o vector delle probabilità f dei cluster
+            //premuto per mostrare il grafico a barre della soluzione o vector delle probabilita f dei cluster
         bar_but.addActionListener(new ActionListener() 
         {
         	public void actionPerformed(ActionEvent event) 
@@ -5830,7 +5830,7 @@ public void consent()
 					
 				
                 
-            // Se viene premuto il TASTO DESTRO del mouse e non è selezionato il tasto freccia Select che apre la tab proprietà
+            // Se viene premuto il TASTO DESTRO del mouse e non e selezionato il tasto freccia Select che apre la tab proprieta
 					if ((SwingUtilities.isRightMouseButton(e) && (sel_but.isSelected()==false))) 
 					{
 						
@@ -5913,7 +5913,7 @@ public void consent()
              			   if (cel.isVertex()==true) 
              		       {
              		       	Vector<String> infoVertex=new Vector<String>() ;
-             			    //vector di stringhe contenente le info da passare alla tabella Proprietà del Vertex
+             			    //vector di stringhe contenente le info da passare alla tabella Proprieta del Vertex
              			    
              			    String x=String.valueOf(g.getCellGeometry(cel).getX());
              			    String y=String.valueOf(g.getCellGeometry(cel).getY());
@@ -6014,7 +6014,7 @@ public void consent()
 		             			 	iId=idd;
 		             			 	cell2On=true;
 		             			 	/*
-		             			 	//passo la colonna del cluster i selezionato e controllo i valori: se sono tutti uguali è cooperaz 
+		             			 	//passo la colonna del cluster i selezionato e controllo i valori: se sono tutti uguali e cooperaz 
 		             			 	if (isCooperation()==true)
 		             			 	{
 		             			 	mode="Cooperation";
@@ -6042,7 +6042,7 @@ public void consent()
 		             			   /* if (scrollPaneProp.isVisible()==true)
 		             			       {	scrollPaneProp.setVisible(false); }
 		             			       */
-		             			 	viewTableH(infoH); //chiama la tabella relativa alle proprietà del Vertex
+		             			 	viewTableH(infoH); //chiama la tabella relativa alle proprieta del Vertex
              			    		tabOpen=true;
              			    		scrollPaneProp.setVisible(true);		 
              			  			splitPanel.validate();
