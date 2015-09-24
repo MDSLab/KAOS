@@ -1,7 +1,6 @@
 /**
- 	* JGrapht Adapter Editor for:
  	* Modeling altruism and selfishness in welfare dynamics: The role of nonlinear interactions
- 	* Kinetic Theory for Active Particles (KTAP)
+ 	* Kinetic Theory for Active Particles (KAOS)
  	* @author Ing. Giulio De Meo 
 **/
 //import DeMeo.*;
@@ -131,7 +130,8 @@ public class Demo
 	public static final String fillcolor = "#D3D3D3";//colore turchese di background cella con probabilita modificata !=0
 	public static double sizeChangedCell;//dimensione cella proporzionale alla probabilita inserita
 	public static JPanel panelVar; //pannello di destra contenente la tabella VARIABILI GLOBALI mu, eta0, beta0
-	public static JPanel panelProp; //pannello di destra contenente le tabelle proprieta	
+	public static JPanel panelProp; //pannello di destra contenente le tabelle proprieta
+		public static JPanel panelInizD;	
 	JCheckBoxMenuItem resizeMi;
 	JCheckBoxMenuItem tabProbabMi,tabVarMi,tabPropMi,colorMi,edgeLabelMi;	
 	public String mode;//cooperation/competition, consent/dissent o User Defined		
@@ -156,7 +156,7 @@ public class Demo
 	public static JTable tableData;
 	public static JScrollPane scrollPaneVar;
    public  static JScrollPane scrollPaneProp,scrollPaneCol,scrollPaneProbab,scrollPaneData;
-   public static JSplitPane splitPanel,mainPanel;
+   public static JSplitPane splitPanel,mainPanel,splitPanel2;
    public static int nCluster;
    public static double  coop; //valore di probabilita comune a tutti i clusters in modalita cooperation
    public static int dist; // di quanto si sposta sul raggio una cella selezionata
@@ -166,7 +166,9 @@ public class Demo
 
    public static Vector<MyEdge> edges = new Vector<MyEdge>();
    public  static Vector<Double> f = new Vector<Double>();
+   public  static Vector<Double> initF = new Vector<Double>();//vector contenente i valori iniziali di probabilità dei Cluster
    public static Vector<Cluster> clust=new Vector<Cluster>(); //vector contenente i clusters da inviare al file XML
+   public static Vector<String> param=new Vector<String>(); 
    
     //non permette di creare piu edge tra nodi. 
     public ListenableDirectedWeightedGraph<String, MyEdge> graph = new ListenableDirectedWeightedGraph<String, MyEdge>(MyEdge.class);
@@ -187,6 +189,33 @@ public class Demo
   public static String hCol,kCol,iCol;
      
    public static int rowCol;
+   public static String modality; //modality cooperation/competiton or consent/dissent or user defined
+      public static String distribution; // first neighbor, uniform,  gaussian;
+   public static double average,deviation; //variables in Gaussian Distribution
+   public static String titleCentral=new String(); //title of central Panel
+   public static boolean okSolution; // it's true if solution has been calculated
+   
+   
+   /** Print the 3D Matrix
+   	* @param n number of clusters of the model
+    * @param  double A[][][]  3D Matrix to be printed
+    **/ 
+   public void  printB (double[][][]  A,int n)
+   {
+        for(int i=0; i<n; i++) 
+		{ 
+			for(int h=0; h<n; h++) 
+			{ 
+				for(int k=0; k<n; k++) 
+				{
+					
+					System.out.print(A[i][h][k] + " "); 
+				}
+					System.out.println(); 
+			} 
+			System.out.println(); 
+		}
+  }
    
     /** Calculate the N function
    	* @param nC number of clusters of the model
@@ -222,17 +251,297 @@ public class Demo
    {
    	int n=Math.round((nC-1)/2); 
    	double sum=0;
-    int num=-n;
+    //int num=-n;
      for (int i=0;i<nC;i++)
      {
-     	sum=sum+num*f.get(i);
+     	sum=sum+i*f.get(i);
      //	System.out.println("F () "+f.get(i));
-     	num=num+1;
+     	//num=num+1;
          //System.out.println("emmeF"+sum);
      }
     
      return sum;
    }
+   
+       /** Open Menu windows to set parameter expected value and standard deviation in Gaussian Distribution
+   	 **/  
+     public static void displayGauss() 
+    {
+    	boolean end1=false;
+    	boolean end2=false;
+    	boolean end=false;
+    	
+    	 String[] items = {"Linear", "Not Linear"};
+        JComboBox combo = new JComboBox(items);	
+       
+    	
+      while( end==false)
+      {	
+    	
+        String precAverage=String.valueOf(average);
+         String precDeviation=String.valueOf(deviation);
+        JTextField textAverage = new JTextField(precAverage);
+        JTextField textDeviation = new JTextField(precDeviation);
+       
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+      
+        panel.add(new JLabel("Expected Value:"));
+        panel.add(textAverage);
+        panel.add(new JLabel("Standard Deviation:"));
+        panel.add(textDeviation);
+     
+     
+               int result = JOptionPane.showConfirmDialog(null, panel, "Gaussian Distribution",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        
+        if (result == JOptionPane.OK_OPTION) 
+        {
+            
+                
+            try
+         	{
+             	
+         	  if ((textAverage.getText()!=null) && (textAverage.getText().equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(textAverage.getText());     
+	             if (valore<0)
+	             { 
+	               
+	               
+	               JOptionPane.showMessageDialog
+	            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE);
+	               
+	               
+	               textAverage.setText(precAverage);
+	               end1=false;
+	             }
+	             else
+	             {
+	             	average=valore; 
+	             	
+	             	end1=true;
+	             }
+	            
+              }
+              else
+              {
+                textAverage.setText("0");
+                average=0;
+                end1=true;
+              }
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Positive","Warning",JOptionPane.WARNING_MESSAGE);             
+	             textAverage.setText(precAverage);  
+	             
+	             end1=false;
+            }  
+            
+          try
+         	{
+             	
+         	  if ((textDeviation.getText()!=null) && (textDeviation.getText().equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(textDeviation.getText());     
+	             if (valore<0)
+	             { 
+	               
+	               
+	               JOptionPane.showMessageDialog
+	            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE);
+	               
+	               
+	               textDeviation.setText(precDeviation);
+	               end2=false;
+	             }
+	             else
+	             {
+	             	deviation=valore; 
+	             	
+	             	end2=true;
+	             }
+	            
+              }
+              else
+              {
+                textDeviation.setText("0");
+                average=0;
+                end2=true;
+              }
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE);             
+	             textDeviation.setText(precDeviation);  
+	             
+	             end2=false;
+            }
+                
+            if ((end1==true) && (end2==true))
+	        {
+	          end=true;
+	        }    
+                
+        } 
+        else 
+        {
+            System.out.println("Cancelled");
+            end=true;
+        }
+       
+       
+        
+      }
+  
+      
+      
+    }//end dispayGauss
+   
+    /** Open Menu windows to set parameter mu, linear, not linear in Coop/Competition mode
+   	 **/  
+     public static void displayCC() 
+    {
+    	boolean end=false;
+    	
+    	 String[] items = {"Linear", "Not Linear"};
+        JComboBox combo = new JComboBox(items);	
+       
+    	
+      while( end==false)
+      {	
+    	
+        String precValue=String.valueOf(mu);
+        JTextField distanceMu = new JTextField(precValue);
+        
+       
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+      
+        panel.add(combo);
+        panel.add(new JLabel("Distance:"));
+        panel.add(  distanceMu);
+     
+     
+               int result = JOptionPane.showConfirmDialog(null, panel, modality,
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        
+        if (result == JOptionPane.OK_OPTION) 
+        {
+            System.out.println(combo.getSelectedItem()
+                + " " + distanceMu.getText());
+                
+            try
+         	{
+             	
+         	  if ((distanceMu.getText()!=null) && (distanceMu.getText().equals("")==false))
+         	  {	
+          	     int valore=Integer.parseInt(distanceMu.getText());     
+	             if (valore<0)
+	             { 
+	               
+	               
+	               JOptionPane.showMessageDialog
+	            (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+	               
+	               
+	               distanceMu.setText(precValue);
+	               end=false;
+	             }
+	             else
+	             {
+	             	mu=valore; 
+	             	System.out.println(mu);
+	             	end=true;
+	             }
+	            
+              }
+              else
+              {
+                distanceMu.setText("0");
+                mu=0;
+                end=true;
+              }
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+	             distanceMu.setText(precValue);  
+	             
+	             end=false;
+            }  
+                
+                
+                
+        } 
+        else 
+        {
+            System.out.println("Cancelled");
+            end=true;
+        }
+        System.out.println(mu);
+        
+      }
+      
+      if (combo.getSelectedItem().equals("Not Linear")==true) //caso non lineare, inserire il parametro Beta
+      {
+      	
+      	boolean endBeta=false;
+      	String sBeta="";
+      	while (endBeta==false)
+      	{
+      	  sBeta=JOptionPane.showInputDialog("Insert the Non Linearity Factor Beta:) ");
+      	  
+      	    try
+         	{
+             	
+         	  if ((sBeta!=null) && (sBeta.equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(sBeta);     
+	             if ((valore<0) || (valore>1))
+	             { 
+	               
+	               JOptionPane.showMessageDialog
+	                  (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+	              
+	               endBeta=false;
+	             }
+	             else
+	             {
+	             	beta=valore; 
+	             	System.out.println("beta: "+beta);
+	             	endBeta=true;
+	             }
+	            
+              }
+              else
+              {
+                
+                beta=0;	System.out.println("beta: "+beta);
+                endBeta=true;
+              }
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+	              
+	             
+	             endBeta=false;
+            } 
+      	  
+      	}
+      	
+      	
+      	
+      }//end Not Linear Mode
+      else
+      {beta=0;}
+      
+      
+    }//end dispayCC
    
    /** Set all elements of  Eta Matrix to value
    	*  @param nC number of clusters
@@ -247,7 +556,290 @@ public class Demo
 		}  
    }
    
-   /** Calculate the B Matrix complete
+   /** Set 2D Matrix B in the cooperation/competition in Uniform Distribution interaction mode 
+    *  dependent from Test & Candidate Selected
+   	*  @param iId Test cluster
+   	*  @param hId Candidate clusters
+    **/
+
+public void unif2B(int iId, int hId)
+{
+  
+    double y=1.0;
+  	double z=hId+1.0;
+  
+ 
+ if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilita esterne ad h e i
+ {
+  if (nCluster>0)
+  {
+  	
+  	coop= y/z;
+    //coop=round(coop,4);
+  }
+  else
+  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+ 	
+ 	if (hId<iId) //nulli a destra di h
+    {
+		  if (nCluster>0)
+		  {
+		  	coop= y/z ;
+		   // coop=round(coop,4);
+		  }
+		  else
+		  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+		  
+	   for (int i=0;i<=hId;i++)
+	   {
+	     B[i][hId][iId]=coop;
+	   	//table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+	   for (int i=hId+1;i<nCluster;i++)
+	   {
+	     B[i][hId][iId]=0.0;
+	   	//table.setValueAt("0.0",i,1);
+	   
+	   }
+    }
+    else //nulli a sinistra
+    if (hId>iId)
+    {
+    	if (nCluster>0)
+		  {
+		  	double a=1.0;
+		  	double kk=nCluster-hId;
+		  	coop= ( a / kk ) ;
+		    //coop=round(coop,4);
+		  }
+		  else
+		  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+    	for (int i=0;i<hId;i++)
+	   {
+	   	B[i][hId][iId]=0.0;
+	   	//table.setValueAt("0.0",i,1);
+	     
+	   }
+	   for (int i=hId;i<nCluster;i++)
+	   {
+	     
+	   	B[i][hId][iId]=coop;
+	   	//table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }   
+    }
+ }
+ else
+ if (Math.abs(iId-hId)>=mu) //COOPERATION MODE - probabilita interne ad h e i
+ {
+   
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (Math.abs(hId-iId)+1.0 )) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+       for (int i=0;i<nCluster;i++)
+	   {
+	   	if (hId<iId)
+	   	{
+		   	if ((i<hId) || (i>iId))
+		   	{
+		       B[i][hId][iId]=0.0;
+		   	//table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   //table.setValueAt(String.valueOf(coop),i,1);
+		     }
+	   	}
+	   	else
+	   	if (hId>iId)
+	   	{
+		   	if ((i<iId) || (i>hId))
+		   	{
+		       B[i][hId][iId]=0.0;
+		   	   //table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   //table.setValueAt(String.valueOf(coop),i,1);
+		     }
+		 }
+	   	
+	   }
+ }  
+} //end unif2B
+   
+      /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
+   	* @param tempo index of timestep
+    **/  
+    
+  //matrice b corretta e costruita dal grafico 
+   public void calculateBLU(int tempo)
+   {
+   	
+   	  int n=Math.round((nCluster-1)/2); 
+   	  
+   	  int hIdprec=hId;
+   	  int iIdprec=iId;
+   	
+   	
+   			//resetB(nCluster);
+   			
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			B[h][k][i] = 0.0; 
+			
+		}
+		
+		
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			
+			if  ( (h==k) && (h==i) )
+			{ B[i][h][k]= 1.0; } 
+			
+	
+		}
+		
+		
+	    for(int h=0; h<nCluster; h++) //
+		for(int i=0; i<nCluster; i++) // 
+		{
+		
+			if (h!=i)
+			{
+			  unif2B(i,h);
+			}
+			else
+			{
+				//B[i][i][h]=1;
+			}
+			
+		
+		}
+		
+		
+		
+	  hId= hIdprec;
+   	  iId =iIdprec;
+		
+   
+   }//end calculateBLU
+   
+      /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
+   	* @param tempo index of timestep
+    **/  
+     //matrice di matlab
+   public void calculateBLU_(int tempo)
+   {
+   	
+   	  int n=Math.round((nCluster-1)/2); 
+   	double a=1.0;
+   	double c=0.0;
+   	
+   			//resetB(nCluster);
+		for(int i=0; i<nCluster; i++) 
+		{
+		for(int h=0; h<nCluster; h++) 
+		{
+		for(int k=0; k<nCluster; k++) 
+		{
+			B[i][h][k] = 0; 
+	
+		}
+	    }
+    	}
+		
+		
+		//1 indice di matrice = 
+		
+		for(int k=0; k<nCluster; k++) //2 indice di riga
+		{
+		  for(int h=0; h<nCluster; h++) //3 indice colonna
+		  {
+	    
+		   
+		
+			//scelta tra competizione e cooperazione
+			
+			if (Math.abs(k-h)<mu) //competizione
+			{
+			     
+			     if (h<k)
+			     {
+			     	for (int i=0;i<h;i++)
+			     	
+			     	{
+			     		c=a/(h+1);
+			          B[i][h][k] = c;
+			        } 
+			     }
+			     
+			     if  (h>k)  
+			     {
+			     	for (int i=h;i<nCluster;i++)
+			     	{
+			     		c=a/(nCluster-h);
+			          B[i][h][k] = c;
+			          
+			        } 
+			     }
+			     
+			     B[h][h][h]=a;
+			 
+			}
+			
+			//coperazione
+			if (Math.abs(k-h)>=mu) //competizione
+			{
+				 if (h<k)
+			     {
+			     	for (int i=h;i<k;i++)
+			     	{
+			     		c=a/(k-h+1);
+			          B[i][h][k] = c;
+			        } 
+			     }
+				
+				if (h>k)
+			     {
+			     	for (int i=k;i<h;i++)
+			     	{
+			     		c=a/(h-k+1);
+			          B[i][h][k] = c;
+			        } 
+			     }
+				
+				
+		    }
+		 
+		
+		
+		}
+	
+     }
+	
+	//printB(B,nCluster);
+		
+   
+   }//end calculateBLU_old 
+   
+   
+   /** Calculate the B Matrix complete to Coop/Comp  Non Linear First Neighbor
    	* @param tempo index of timestep
     **/  
    public void calculateB(int tempo)
@@ -267,11 +859,11 @@ public class Demo
 		
 		
 		
-		for(int i=0; i<nCluster; i++) //1  indice di matrice = 
+		for(int i=0; i<nCluster; i++) //1 indice di matrice = 
 		{
-		for(int h=0; h<nCluster; h++) //2  indice di riga
+		for(int h=0; h<nCluster; h++) //2 indice di riga
 		{
-		for(int k=0; k<nCluster; k++) //3  indice colonna
+		for(int k=0; k<nCluster; k++) //3 indice colonna
 		{
 			if  ( (h==k) && (h==i) )
 			{ B[i][h][k]= 1; } 
@@ -378,138 +970,105 @@ public class Demo
    
    }//end calculateB
     
-     /** Calculate the B Matrix
-   	* @param tempo index of timestep
-    **/  
-   public void calculateB_(int tempo)
-   {
-   	
-   	  int n=Math.round((nCluster-1)/2); 
-   	
-   	
-   			//resetB(nCluster);
-		for(int i=0; i<nCluster; i++) 
-		for(int h=0; h<nCluster; h++) 
-		for(int k=0; k<nCluster; k++) 
-		{
-			B[h][k][i] = 0; 
-	
-		}
-		
-		
-		
-		for(int i=0; i<nCluster; i++) //1  indice di matrice = 
-		{
-		for(int h=0; h<nCluster; h++) //2  indice di riga
-		{
-		for(int k=0; k<nCluster; k++) //3  indice colonna
-		{
-			if  ( (h==k) && (h==i) )
-			{ B[i][h][k]= 1; } 
-			/*
-			if ( (Math.abs(h-k)>=mu) && (h>n+1) && (k>n+1) && (h==i) )			
-			{
-		      B[h][k][i] = 1;
-			}
-			
-			if ( (Math.abs(h-k)>=mu) && (h<n+1) && (k<n+1) && (h==i) )			
-			{
-		      B[h][k][i] = 1;
-			}
-			*/
-			//scelta tra competizione e cooperazione
-			
-			if (Math.abs(k-h)<mu) //competizione
-			{
-			     if ( (h==0) && (h!=k) && (i==h) )
-			     {
-			        B[i][h][k] = 1;
-			     }
-			     
-			     if ( (h==nCluster-1) && (h!=k) && (i==h) )
-			     {
-			        B[i][h][k] = 1;
-			     }
-			     
-			     if ( (h!=0) && (h!=k) && (h<k) && (i==h-1) )
-			     {
-			        B[i][h][k] = beta0;
-			     }
-			     
-			     if ( (h!=0) && (h!=k) && (h<k) && (i==h) )
-			     {
-			        B[i][h][k] = 1 - beta0;
-			     }
-			     
-			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h) )
-			     {
-			        //B[h][i][k] =1 - ( beta0 + beta * enneF(nCluster) );
-			        B[i][h][k]= 1 - ( beta0 );
-			     }
-			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h+1) )
-			     {
-			       // B[h][i][k] =( beta0 + beta * enneF(nCluster) );
-			       B[i][h][k] = ( beta0 );
-			     }
-			 
-			 
-			}
-			else
-			//coperazione
-			{
-				//System.out.println(i+" "+h+" "+k);
-			     if ( (h<k) && (i==h+1) )
-			     {
-			        //B[h][i][k] =( beta0 + beta * enneF(nCluster)  );
-			        B[i][h][k] =( beta0 );//+ beta * enneF(nCluster)  );
-			        
-			     }
-			     
-			     if (  (h<k) &&  (i==h) )
-			     {
-			        //B[h][i][k] = 1 - ( beta0 + beta * enneF(nCluster)  );
-			        B[i][h][k] = 1 - ( beta0 );//+ beta * enneF(nCluster)  );
-			     }
-			     
-			     if (  (h>k)  && (i==h) )
-			     {
-			        B[i][h][k] = 1 - beta0; 
-			     
-			     }
-			     if ((h>k)  && (i==h-1))
-			     {
-			        B[i][h][k] = beta0; 
-			        //System.out.println("entraaaaaaaaaaaaaaaa");
-			     }
-		    }
-		 }
-		
-		
-		}
-	
-    	}
-	
-	
-		
-		//fine calcolo matrici B
-   
-   		double sommab=0;
-	  for(int i=0; i<nCluster; i++) 
-	  {
-	  	sommab=0;
-	  	for(int h=0; h<nCluster; h++) 
-	    //for(int k=0; k<nCluster; k++) 
-	    {
-	    	sommab=sommab+B[i][i][h];
-	     // System.out.println("B "+"( "+h+" "+h+" "+i+" = "+B[h][h][i]);
-	    }   
-	  
-	  }
-	  //System.out.println("SOMMA B: "+sommab);
-   
-   }//end calculateB
+
      
-    
+     /** Calculate the solution of the Cluster Model in Cooperation/Competition Mode and Uniform Distribution
+      **/  
+   public void solutionLU()
+   {
+      double somma=0;
+   	 
+   	  double[] ff=new double [nCluster];
+   	 // nt=3;
+   	   	  
+   	  for (int i=0;i<nCluster;i++)
+   	  {
+   	    ff[i]=(double) f.get(i);
+
+   	  }
+   	  	   
+   	  enne=new double [nt+1];
+      emme=new double [nt+1];
+      int n=Math.round((nCluster-1)/2);
+      
+      
+       resetEta(nCluster);
+        
+        
+        setEta(nCluster,eta0);
+         df=new double[nCluster];
+        	
+        	               
+        calculateBLU(0);
+       
+                      
+	      for (int tempo=0;tempo<nt;tempo++)
+	      {
+	      //	System.out.println("iterazione "+tempo);
+	      	enne[tempo]=enneF(nCluster);
+	      
+	      	emme[tempo]=emmeF(nCluster);
+	   		
+	        //calculateBLU(tempo);
+	        
+	           for (int i=0;i<nCluster;i++)
+	           {
+	              df[i]=0.0;   
+	              //System.out.println(i+"  "+f.get(i));
+	           }         
+	         
+	           
+			        for(int i=0; i<nCluster;i++) 	
+		        	{
+						for(int k=0; k<nCluster; k++)
+						{ 
+							for(int h=0; h<nCluster; h++) 
+				            {
+				           
+				             df[i]=df[i]+eta[h][k]*B[i][h][k]*f.get(h)*f.get(k);
+				            
+				                   
+				 //System.out.println("f("+h+") "+f.get(h)+"  f("+k+") "+ f.get(k) + " B ("+i+" "+h+" "+k+") "+B[i][h][k]+" "+df[i]);
+				 
+				            }
+				            df[i]=df[i]-(eta[i][k]*(f.get(i)*f.get(k)));
+				         			        //System.out.println("df("+i+")= "+df[i]); 
+				         			         
+			            } 
+			          //  System.out.println("df "+df[i]);
+		            }
+                                 
+           for (int i=0;i<nCluster;i++)
+           {         
+             f.set(i,f.get(i)+deltat*df[i]);
+           }
+	      
+	            	
+	      
+	      } //fine ciclo timesteps tempo da 1 a Nt 
+      
+          System.out.println("Soluzione");
+      
+      
+           for (int i=0;i<nCluster;i++)
+           {
+             System.out.println("df "+df[i]);
+             ff[i]=f.get(i);
+             somma=somma+f.get(i);
+           }
+           
+              
+              
+                System.out.println("\n\nSomma Finale: "+somma+"\n\n");
+                
+    		 printB(B,nCluster);
+           
+           String text="";
+           String[] s= new String [nCluster];
+      ChartBar cb=new ChartBar(ff, s, text);
+      cb.chart(nCluster,ff);
+      
+   } //end solutionLU   
       
     /** Calculate the solution of the Cluster Model in Cooperation/Competition Mode
     **/  
@@ -539,7 +1098,7 @@ public class Demo
    	  
    	  f.set(10,somma2);
    	 
-   	*/
+   	  */
    
    	
    	
@@ -602,7 +1161,7 @@ public class Demo
             }
             
             
-         // double deltaa=0.000002;
+         
            for (int i=0;i<nCluster;i++)
            {
            	 
@@ -636,20 +1195,7 @@ public class Demo
                }
                 System.out.println("\n\nSomma Finale: "+somma+"\n\n");
                 
-                for(int i=0; i<nCluster; i++) 
-		{ 
-			for(int h=0; h<nCluster; h++) 
-			{ 
-				for(int k=0; k<nCluster; k++) 
-				{
-					
-					
-					System.out.print(B[i][h][k] + " "); 
-				}
-					System.out.println(); 
-			} 
-			System.out.println(); 
-		}
+           printB(B,nCluster);
            
            String text="Graphic";
            String[] s= new String [nCluster];
@@ -812,7 +1358,7 @@ public class Demo
 			System.out.println(); 
 		}
            
-           String text="Graphic";
+           String text="Cluster probabilities at Tmax";
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
       cb.chart(nCluster,ff);
@@ -1269,6 +1815,7 @@ public String parseMatrix(double m[][][], int h,int r,int c)
 public void userDefined() 
 {
    mode="User Defined";
+   modality="User Defined";
   if (nCluster>0)
   {
    
@@ -1337,7 +1884,7 @@ public void userDefined()
 
 }
 
-/* Set the cooperation/competition interaction mode between the clusters
+/* Set the cooperation/competition in Non-Uniform Distribution interaction mode between the clusters
 */
 
 public void cooperation()
@@ -1346,44 +1893,49 @@ public void cooperation()
 
   mode="Cooperation/Competition";
   
-    double y=1;
-  	double z=hId+1;
+    //double y=1;
+  //	double z=hId+1;
   
- System.out.println("cooop: "+coop);
+ //System.out.println("cooop: "+coop);
  
  if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilita esterne ad h e i
  {
   if (nCluster>0)
   {
   	
-  	coop= y/z;
-    coop=round(coop,4);
+  //	coop= y/z;
+   // coop=round(coop,4);
   }
   else
   {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
  	
- 	if (hId<iId) //nulli a destra di h
+ 	if ((hId<iId) && (hId!=0)) //beta a sinistra di h
     {
 		  if (nCluster>0)
 		  {
-		  	coop= y/z ;
+		  	coop= beta ;
 		    coop=round(coop,4);
 		  }
 		  else
 		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
 		  
-	   for (int i=0;i<=hId;i++)
-	   {
-	     B[i][hId][iId]=coop;
-	   	table.setValueAt(String.valueOf(coop),i,1);
-	   
-	   }
-	   for (int i=hId+1;i<nCluster;i++)
+	   for (int i=0;i<nCluster;i++)
 	   {
 	     B[i][hId][iId]=0;
 	   	table.setValueAt("0.0",i,1);
 	   
 	   }
+	   
+	   resetB(nCluster);
+	   
+	     B[i][hId][iId]=coop; //in hId assegnare il valore  (1-beta)	     
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   	
+	   	B[i][hId][iId]=coop; //in iId assegnare il valore  (beta)	     
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   
+	   
     }
     else //nulli a sinistra
     if (hId>iId)
@@ -1598,6 +2150,322 @@ public void cooperation()
    
    
 }//end cooperation
+
+
+/* Set the cooperation/competition in Uniform Distribution interaction mode between the clusters
+*/
+
+public void cooperationUnif()
+{
+  MyEdge edgess;
+
+  mode="Cooperation/Competition";
+  
+    double y=1;
+  	double z=hId+1;
+  
+ System.out.println("cooop: "+coop);
+ 
+ if (Math.abs(iId-hId)<mu) //COMPETITION MODE - probabilita esterne ad h e i
+ {
+  if (nCluster>0)
+  {
+  	
+  	coop= y/z;
+    coop=round(coop,4);
+  }
+  else
+  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
+ 	
+ 	if (hId<iId) //nulli a destra di h
+    {
+		  if (nCluster>0)
+		  {
+		  	coop= y/z ;
+		    coop=round(coop,4);
+		  }
+		  else
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
+		  
+	   for (int i=0;i<=hId;i++)
+	   {
+	     B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+	   for (int i=hId+1;i<nCluster;i++)
+	   {
+	     B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	   
+	   }
+    }
+    else //nulli a sinistra
+    if (hId>iId)
+    {
+    	if (nCluster>0)
+		  {
+		  	double a=1;
+		  	double kk=nCluster-hId;
+		  	coop= ( a / kk ) ;
+		    coop=round(coop,4);
+		  }
+		  else
+		  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+    	for (int i=0;i<hId;i++)
+	   {
+	   	B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	     
+	   }
+	   for (int i=hId;i<nCluster;i++)
+	   {
+	     
+	   	B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+    
+    }
+     /*
+  for (int i=0;i<nCluster;i++)
+   {
+   	if (i<=iId)
+   	{
+   	B[hId][i][iId]=coop;
+   	table.setValueAt(String.valueOf(coop),i,1);
+    }
+    else
+    {
+      B[hId][i][iId]=0;
+   	   table.setValueAt("0.0",i,1);
+    }
+   }
+   */
+  
+  String s1=String.valueOf(hId);
+  
+  scrollPaneProp.setVisible(true);
+  
+  if (edgePainted()==true)
+		{ removeAllEdges();}
+  
+ // removeAllEdges();
+ 
+   for (int i=0;i<nCluster;i++)
+   {
+   	
+    
+    	String s2=String.valueOf(i);
+        if(i!=hId)
+        {
+   								g.getModel().beginUpdate();
+				               
+				                  edgess=graph.addEdge(s1, s2);
+				                 
+				                    if (hId<iId)  //nulli a destra
+					                {  
+						                if (i<hId)
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        				    }
+		        				    else //nulli a sinistra
+		        				    if (hId>iId) 
+		        				    {
+		        				    	if (i<hId)
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        				    
+		        				    
+		        				    }
+	        					  
+	        					  freccia_but.setSelected(true);
+	        					  
+	        				   g.getModel().endUpdate();
+	     }
+   
+   }
+ }
+ else
+ if (Math.abs(iId-hId)>=mu) //COOPERATION MODE - probabilita interne ad h e i
+ {
+	  
+   /*	
+ 	if (hId<iId) //nulli interni 
+    {
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (nCluster-Math.abs(iId-hId)) ) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
+	   for (int i=0;i<nCluster;i++)
+	   {
+	   	if ((i<=hId) || (i>iId))
+	   	{
+	     B[i][hId][iId]=coop;
+	   	table.setValueAt(String.valueOf(coop),i,1);
+	    }
+	     else
+	   {
+	     B[i][hId][iId]=0;
+	   	table.setValueAt("0.0",i,1);
+	   }
+	   
+	   }
+    }
+    else 
+    */  
+    //nulli esterni
+   // if (hId>iId) {}
+    
+  
+   
+    {
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (Math.abs(hId-iId)+1 )) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+       for (int i=0;i<nCluster;i++)
+	   {
+	   	if (hId<iId)
+	   	{
+		   	if ((i<hId) || (i>iId))
+		   	{
+		       B[i][hId][iId]=0;
+		   	table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   table.setValueAt(String.valueOf(coop),i,1);
+		     }
+	   	}
+	   	else
+	   	if (hId>iId)
+	   	{
+		   	if ((i<iId) || (i>hId))
+		   	{
+		       B[i][hId][iId]=0;
+		   	table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   table.setValueAt(String.valueOf(coop),i,1);
+		     }
+		 }
+	   	
+	   }
+    
+    }
+
+  
+  String s1=String.valueOf(hId);
+  
+  scrollPaneProp.setVisible(true);
+  
+  if (edgePainted()==true)
+		{ removeAllEdges();}
+  
+ // removeAllEdges();
+ 
+   for (int i=0;i<nCluster;i++)
+   {
+   	
+    
+    	String s2=String.valueOf(i);
+        if(i!=hId)
+        {
+   								g.getModel().beginUpdate();
+				               
+				                  edgess=graph.addEdge(s1, s2);
+				                 /*
+				                    if (hId<iId)  //nulli interni 
+					                {  
+						                if ((i<hId) || (i>iId))
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        				    }
+		        				    else //nulli esterni
+		        				    */
+		        				   // if (hId>iId) 
+		        				   
+		        				   	if (hId>iId)
+		        				    {
+		        				    	if ((i<iId) || (i>hId))
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        				    
+		        				    
+		        				    }
+		        				    else
+		        				    if (hId<iId)
+		        				    {
+		        				    if ((i<hId) || (i>iId))
+						                {
+			        					  graph.setEdgeWeight(edgess,0);
+			        			        }
+		        			            else	        			        
+						                {
+			        					  graph.setEdgeWeight(edgess,coop);
+			        			        }
+		        				  }
+	        					  
+	        					  freccia_but.setSelected(true);
+	        					  
+	        				   g.getModel().endUpdate();
+	     }
+   
+   }
+ }
+ 
+ 
+ for(int i=0; i<nCluster; i++) 
+		{ 
+			for(int h=0; h<nCluster; h++) 
+			{ 
+				for(int k=0; k<nCluster; k++) 
+				{
+					
+					
+					System.out.print(B[i][h][k] + " "); 
+				}
+					System.out.println(); 
+			} 
+			System.out.println(); 
+		}
+   
+   
+}//end cooperationUnif
 
 
 
@@ -1950,6 +2818,8 @@ public void consent()
  public void setF (int n)
   {
   	f = new Vector<Double>(n);
+  	initF=new Vector<Double>(n);
+  	
   	double a=1;
   	
   	double prob = a/n;
@@ -1957,6 +2827,7 @@ public void consent()
   	for (int i=0;i<n;i++)
   	{
   	  f.add(prob);
+  	  initF.add(prob);
   	}
   	
   }
@@ -2051,12 +2922,14 @@ public void consent()
   {
        	
        	f = new Vector<Double>(); 
+       	initF = new Vector<Double>(); 
        	double num=0;
 		
 		for(int h=0; h<n; h++) 
 		{
 		
 		f.add(num);
+		initF.add(num);
 		}
 		
 		if(scrollPaneProbab!=null)
@@ -2578,49 +3451,77 @@ public void consent()
   {
   	List<TableCellEditor> editors = new ArrayList<TableCellEditor>(1);
     
-    String[] items1 = { "Coop / Comp","User Defined"};
+    String[] items1 = { "User Defined", "Coop / Comp","Cons / Diss"};
+    
+    String[] items2 = { "Uniform","First Neighbor","Gaussian"};
+        
         
         JComboBox comboBox1 = new JComboBox(items1);
-        DefaultCellEditor dce1 = new DefaultCellEditor( comboBox1 );
+        DefaultCellEditor dce1 = new DefaultCellEditor( comboBox1);
+       
         editors.add( dce1 );
+        
+      
+        
+        JComboBox comboBox2 = new JComboBox(items2);
+        DefaultCellEditor dce2 = new DefaultCellEditor( comboBox2 );
+        //if (modality.equals("User Defined")==false)
+        {
+        editors.add( dce2 );
+        }
     
     Vector<String> row1 = new Vector<String>();
-    row1.addElement(" Mu ");
+    row1.addElement(" Encounter Rate ");//Eta0 parameter
     row1.addElement("");
+    
  	 
  	Vector<String> row2 = new Vector<String>();
-    row2.addElement(" N ");
+    row2.addElement(" Number of Clusters ");
     row2.addElement("");
     
     Vector<String> row3 = new Vector<String>();
-    row3.addElement(" Mode ");
+    row3.addElement(" Interaction Mode ");
     row3.addElement("");
+    
+    Vector<String> row4 = new Vector<String>();
+    row4.addElement(" Table of Games ");
+    row4.addElement("");
    
     Vector<Vector<String>> rowData = new Vector<Vector<String>>();   
     rowData.addElement(row1);
     rowData.addElement(row2);
-    rowData.addElement(row3);
+    rowData.addElement(row3); 
+    rowData.addElement(row4);
+    
+    
+    
    
     Vector<String> columnNames = new Vector<String>();
      
-    columnNames.addElement("Variable");
+    columnNames.addElement("Type");
     columnNames.addElement("Value");
   
     
     DefaultTableModel model = new DefaultTableModel(rowData, columnNames) ;
     tableData = new JTable(model)
 	{
+		
 		 private static final long serialVersionUID = 1L;
 		 
 			//  Determine editor to be used by row
             public TableCellEditor getCellEditor(int row, int column)
             {
-              	
+              	tableData.setRowHeight(2,18);
+              	tableData.setRowHeight(3,18);
                 int modelColumn = convertColumnIndexToModel( column );
 
                 if (modelColumn == 1 && row ==2)
-                    return editors.get(0);
-
+                    return editors.get(0); //abilita tendina mode
+                else
+                if (modelColumn == 1 && row ==3 && (modality.equals("User Defined")==false))
+               {
+                    return editors.get(1); //abilita tendina distribution
+               }
                 else
                     return super.getCellEditor(row, column);
             }//
@@ -2637,6 +3538,7 @@ public void consent()
 			
    };
    
+    //mode selection listener
    	comboBox1.addActionListener(new ActionListener() 
    	{
 
@@ -2649,6 +3551,16 @@ public void consent()
 				 
 				if (selected.equals("User Defined"))
 				{
+					 //tableData.setValueAt("",3,0);
+					 //tableData.setValueAt("",3,1);
+					 modality="User Defined";
+					 
+					 tableData.setMinimumSize(new Dimension(100,60));
+	  
+				        tableData.setPreferredSize(new Dimension(150,60));
+				        tableData.setRowHeight(3,1);
+					 
+					modality="User Defined";	
 					resetB(nMax);
 					 System.out.println("user defined");
 					if ((hId!=-1) && (iId!=-1) && (nCluster>0))
@@ -2670,7 +3582,18 @@ public void consent()
 				else
 				if (selected.equals("Coop / Comp"))
 				{
-				  
+				    modality="Cooperation/Competition";	
+				     
+				     
+				     tableData.setMinimumSize(new Dimension(100,74));
+	
+        			tableData.setPreferredSize(new Dimension(150,74));
+        			tableData.setRowHeight(3,18);
+				     
+				    displayCC();
+				    
+				    
+				    
 				//	if ((hId!=-1) && (iId!=-1))
 				    if ((hId==-1) && (iId==-1) && (nCluster>0))
 					{
@@ -2703,11 +3626,18 @@ public void consent()
 				    
 				}//end cooperation/competition
 				
-				/*
+			
 				else
 				if (selected.equals("Cons / Diss"))
 				{
-				
+					
+					
+					tableData.setMinimumSize(new Dimension(100,74));
+	                tableData.setPreferredSize(new Dimension(150,74));
+	                tableData.setRowHeight(3,18);
+					
+				  modality="Consent/Dissent";
+				  displayCC();
 					if ((hId!=-1) && (iId!=-1))
 					{
 							System.out.println("consent/dissent");
@@ -2722,13 +3652,98 @@ public void consent()
 							 					  	
 							    //  removeAllEdges();
 							    g.getModel().endUpdate();
-							    consent();
+							    //consent();
 							 }
 				    }
-				}
-				*/
+				}//end consent/dissent
+			
 			}
 		});//end combobox1
+		
+		
+		comboBox2.addActionListener(new ActionListener() 
+     	{
+
+			public void actionPerformed(ActionEvent e) 
+			{
+				final long serialVersionUID = 1L;
+				
+				JComboBox val = (JComboBox) e.getSource();
+				String selected = (String) val.getSelectedItem();
+				 
+				if (selected.equals("First Neighbor"))
+				{
+				    distribution="First Neighbor";
+			 	    System.out.println("Primo vicino");
+			 	    boolean endBeta0=false;
+			      	String sBeta0="";
+			      	while (endBeta0==false)
+			      	{
+			      	  sBeta0=JOptionPane.showInputDialog("Insert the First Neighbor Probability Beta0:  ");
+			      	  
+			      	    try
+			         	{
+			             	
+			         	  if ((sBeta0!=null) && (sBeta0.equals("")==false))
+			         	  {	
+			          	     double valore=Double.parseDouble(sBeta0);     
+				             if ((valore<0) || (valore>1))
+				             { 
+				               
+				               JOptionPane.showMessageDialog
+				                  (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+				              
+				               endBeta0=false;
+				             }
+				             else
+				             {
+				             	beta0=valore; 
+				             	System.out.println("beta: "+beta);
+				             	endBeta0=true;
+				             }
+				            
+			              }
+			              else
+			              {
+			                
+			                beta0=0;	System.out.println("beta: "+beta);
+			                endBeta0=true;
+			              }
+			            }   
+			              
+			            catch (NumberFormatException  ex)
+			            {
+			            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+				              
+				             
+				             endBeta0=false;
+			            } 
+			      	  
+			      	}
+			 	    
+			 	    
+				} //end 1 near
+				else
+				if (selected.equals("Uniform"))
+				{
+				  
+				  distribution="Uniform";
+				    System.out.println("uniform");
+				   
+				    
+				}//end uniform
+				
+				
+				else
+				if (selected.equals("Gaussian"))
+				{
+					distribution="Gaussian";
+				   displayGauss();
+					 System.out.println("gauss");
+				}//end gauss
+				
+			}
+		});//end combobox2
 		
 		
 		
@@ -2749,7 +3764,7 @@ public void consent()
        
         Dimension tablePreferred = scrollPaneData.getPreferredSize();
                 scrollPaneData.setPreferredSize(
-                    new Dimension(tablePreferred.width/8, tablePreferred.height/5) );
+                    new Dimension(tablePreferred.width/8, tablePreferred.height/4) );
     
         
 
@@ -2760,9 +3775,9 @@ public void consent()
     	//tableVar.setRowMargin(5);
       
 		
-		tableData.setMinimumSize(new Dimension(100,60));
+		tableData.setMinimumSize(new Dimension(100,74));
 	  //tableVar.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableData.setPreferredSize(new Dimension(150,60));
+        tableData.setPreferredSize(new Dimension(150,74));
         
 	//	panelVar.add(tableVar);
 		
@@ -2799,10 +3814,10 @@ public void consent()
         }
       	public void editingStopped(ChangeEvent e) 
       	{
-           	String cellMu=tableData.getValueAt(0, 1).toString();        	
+           	String cellEta0=tableData.getValueAt(0, 1).toString();        	
           	String cellN=tableData.getValueAt(1, 1).toString();
             String cellMode=tableData.getValueAt(2, 1).toString();
-           
+             String cellDistribution=tableData.getValueAt(3, 1).toString();
                
                
     	 r=tableData.getSelectedRow(); 
@@ -2810,35 +3825,36 @@ public void consent()
   
          
             try
-            {
-              if ((cellMu!=null) && (cellMu.equals("")==false))
-              {
-              	double valore=Double.parseDouble(cellMu);
-             
-	             if (valore<0)
+         	{
+             	
+         	  if ((cellEta0!=null) && (cellEta0.equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(cellEta0);     
+	             if ((valore<0))
 	             { 
 	               
 	               
 	               JOptionPane.showMessageDialog
 	            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE);
 	               
-	                tableData.setValueAt(mu,r,1);
+	               
+	               tableData.setValueAt(eta0,r,1);
 	               tableData.setEditingRow(r);
+	               
 	             }
 	             else
 	             {
-	             	mu=(int) valore;
-	             	
+	             	eta0=valore; //aggiorna il valore in memoria di eta0
+	             	 System.out.println("\n Eta0: "+eta0);
 	             }
-              
+	            
               }
-             
-            }
+            }   
+              
             catch (NumberFormatException  ex)
             {
-            	JOptionPane.showMessageDialog
-            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE); 
-             tableData.setValueAt(mu,r,1);
+            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+	               tableData.setValueAt(eta0,r,1);
 	               tableData.setEditingRow(r);
             }
 
@@ -2885,7 +3901,7 @@ public void consent()
     });
     
 
-   System.out.println("\n");
+  
    panelVar.add(scrollPaneData);
    
   }//end class ViewTabData
@@ -2896,7 +3912,7 @@ public void consent()
    */ 
   public void viewTabVar (Vector<String> values)
   {
-  	
+  	/*
     Vector<String> row1 = new Vector<String>();
     row1.addElement(" Eta0 ");
     row1.addElement("");
@@ -2908,22 +3924,22 @@ public void consent()
     Vector<String> row3 = new Vector<String>();
     row3.addElement(" Beta ");
     row3.addElement("");
-  
-    Vector<String> row4 = new Vector<String>();
-    row4.addElement(" Tmax ");
-    row4.addElement("");
+  */
+    Vector<String> row1 = new Vector<String>();
+    row1.addElement(" Tmax ");
+    row1.addElement("");
     
-    Vector<String> row5 = new Vector<String>();
-    row5.addElement(" Nt ");
-    row5.addElement("");
+    Vector<String> row2 = new Vector<String>();
+    row2.addElement(" DeltaT ");
+    row2.addElement("");
      
     Vector<Vector<String>> rowData = new Vector<Vector<String>>();
      
     rowData.addElement(row1);
     rowData.addElement(row2);
-    rowData.addElement(row3);
-    rowData.addElement(row4);
-   	rowData.addElement(row5);
+   // rowData.addElement(row3);
+   // rowData.addElement(row4);
+   //	rowData.addElement(row5);
   
    
     Vector<String> columnNames = new Vector<String>();
@@ -2957,7 +3973,7 @@ public void consent()
        
         Dimension tablePreferred = scrollPaneVar.getPreferredSize();
                 scrollPaneVar.setPreferredSize(
-                    new Dimension(tablePreferred.width/8, tablePreferred.height/6) );
+                    new Dimension(tablePreferred.width/8, tablePreferred.height/8) );
     
         
 
@@ -2968,9 +3984,9 @@ public void consent()
     	//tableVar.setRowMargin(5);
       
 		
-		tableVar.setMinimumSize(new Dimension(100,80));
+		tableVar.setMinimumSize(new Dimension(100,40));
 	  //tableVar.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tableVar.setPreferredSize(new Dimension(150,80));
+        tableVar.setPreferredSize(new Dimension(150,40));
         
 	//	panelVar.add(tableVar);
 		
@@ -3008,22 +4024,22 @@ public void consent()
       	public void editingStopped(ChangeEvent e) 
       	{
            
-           	String cellEta0=tableVar.getValueAt(0, 1).toString();
-           	String cellBeta0=tableVar.getValueAt(1, 1).toString();
-          	String cellBeta=tableVar.getValueAt(2, 1).toString();
+           	//String cellEta0=tableVar.getValueAt(0, 1).toString();
+           	//String cellBeta0=tableVar.getValueAt(1, 1).toString();
+          //	String cellBeta=tableVar.getValueAt(2, 1).toString();
           
-            String cellTmax=tableVar.getValueAt(3, 1).toString();
-            String cellNt=tableVar.getValueAt(4, 1).toString();
+            String cellTmax=tableVar.getValueAt(0, 1).toString();
+            String cellDeltat=tableVar.getValueAt(1, 1).toString();
                
                
     	 r=tableVar.getSelectedRow(); 
-    
-       	try
+     /*
+       	   try
          	{
              	
          	  if ((cellEta0!=null) && (cellEta0.equals("")==false))
          	  {	
-         	     double valore=Double.parseDouble(cellEta0);     
+          	     double valore=Double.parseDouble(cellEta0);     
 	             if ((valore<0) || (valore>1))
 	             { 
 	               
@@ -3051,7 +4067,7 @@ public void consent()
 	               tableVar.setValueAt(eta0,r,1);
 	               tableVar.setEditingRow(r);
             }
-         
+        
            
             try
          	{
@@ -3113,7 +4129,7 @@ public void consent()
              tableVar.setValueAt(beta,r,1);
 	               tableVar.setEditingRow(r);
             }
-   
+    */
             try
             {
             	 r=tableVar.getSelectedRow(); 
@@ -3151,9 +4167,9 @@ public void consent()
             try
             {
             	r=tableVar.getSelectedRow(); 
-              if ((cellNt!=null) && (cellNt.equals("")==false))
+              if ((cellDeltat!=null) && (cellDeltat.equals("")==false))
               {
-              	double valore=Double.parseDouble(cellNt);
+              	double valore=Double.parseDouble(cellDeltat);
              
 	             if (valore<=0)
 	             { 
@@ -3162,16 +4178,26 @@ public void consent()
 	               JOptionPane.showMessageDialog
 	            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE);
 	          
-	                tableVar.setValueAt(Math.round(nt),r,1);
+	                tableVar.setValueAt(deltat,r,1);
 	               tableVar.setEditingRow(r);
 	               
 	             }
 	             else
 	             {
-	             	nt=(int) valore;
-	             	deltat=tmax/nt;
+	             	deltat=(double) valore;
+	               //	deltat=tmax/nt;
+	               nt=(int) (tmax/deltat);
+	               System.out.println("Nt: "+nt);
 	             }
               
+              }
+              else
+              {
+              	JOptionPane.showMessageDialog
+            (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE); 
+             tableVar.setValueAt(deltat,r,1);
+	               tableVar.setEditingRow(r);
+                
               }
              
             }
@@ -3179,7 +4205,7 @@ public void consent()
             {
             	JOptionPane.showMessageDialog
             (null,"Insert a Positive Number","Warning",JOptionPane.WARNING_MESSAGE); 
-             tableVar.setValueAt(Math.round(nt),r,1);
+             tableVar.setValueAt(deltat,r,1);
 	               tableVar.setEditingRow(r);	                
             }
             
@@ -3439,7 +4465,7 @@ public void consent()
 
     });
   
-    	panelProp.add(scrollPaneProbab);
+    	panelInizD.add(scrollPaneProbab);
 
   }//end class ViewTableF
 
@@ -3450,6 +4476,9 @@ public void consent()
    */ 
   public void viewTableH(Vector<String> values)
   {  
+  
+    titleCentral="Cluster Transitions";
+    panelInizD.setBorder(new TitledBorder(titleCentral));
     
    Vector<Vector<String>> rowData = new Vector<Vector<String>>();
    for (int i=0;i<values.size();i++)
@@ -3474,16 +4503,18 @@ public void consent()
             	   	}
             	   	if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
             	   	{
-            	   	  scrollPaneProbab.setVisible(false);
+            	   	  //scrollPaneProbab.setVisible(false);
             	   	  
             	   	}
             	   	if ((scrollPaneVar.isVisible()==true) && (scrollPaneVar!=null))
             	   	{
-            	   	  scrollPaneVar.setVisible(false);
+            	   	  //scrollPaneVar.setVisible(false);
             	   	 
             	   	}
             	   	
-            	   	colorMi.setSelected(false);tabProbabMi.setSelected(false); tabPropMi.setSelected(false);
+            	   	colorMi.setSelected(false);
+            	   	tabProbabMi.setSelected(false); 
+            	   	tabPropMi.setSelected(true);
   
     
     DefaultTableModel model = new DefaultTableModel(rowData, columnNames) 
@@ -3762,7 +4793,7 @@ public void consent()
 
     });
   
-    	panelProp.add(scrollPaneProp);
+    	panelInizD.add(scrollPaneProp);
 
   }//end class ViewTableH
   
@@ -4159,7 +5190,7 @@ public void consent()
     {  
     	
   
-    
+      okSolution=false;
     
       screenX=(int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
       screenY=(int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
@@ -4171,22 +5202,27 @@ public void consent()
        mu=5;
        eta0=0.6;
        beta0=0.6;
-       beta=0.4;
+       beta=0.0;
        tmax=200;
-       nt=100000;
+       nt=100000;   
        deltat=tmax/nt;
        nCluster=0;
        dist=200;
+       average=0;
+       deviation=0;
        diametro=40;
        cell1On=false;
        cell2On=false;
        iId=-1;
        hId=-1;
        resetB(nMax);
-       
+       modality="";
+       distribution="";
        // resetF(nMax);
+       titleCentral="Initial Condition";
        
        clust=new Vector<Cluster>();
+       initF = new Vector<Double>();
        
        enne=new double [nt];
       emme=new double [nt];
@@ -4202,16 +5238,21 @@ public void consent()
        sessionOpen=false;
        
        panelVar = new JPanel(new BorderLayout(2,1));
-       panelVar.setBorder(new TitledBorder("Variables"));
+       panelVar.setBorder(new TitledBorder("Model Parameters"));
+       
+       panelInizD = new JPanel(new BorderLayout(2,1));
+       
+       panelInizD.setBorder(new TitledBorder(titleCentral));
        
        panelProp = new JPanel(new BorderLayout(2,1));
-       panelProp.setBorder(new TitledBorder("Properties"));
+       panelProp.setBorder(new TitledBorder("Solution Parameters"));
        
+       //scrollPaneInizD=new JScrollPane();
        scrollPaneProp=new JScrollPane();
        scrollPaneCol=new JScrollPane();
        scrollPaneData=new JScrollPane();
        scrollPaneVar=new JScrollPane();
-          scrollPaneProbab=new JScrollPane();
+       scrollPaneProbab=new JScrollPane();
       
        
       //  ListenableGraph<String, DefaultEdge> graph = new ListenableDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
@@ -4370,7 +5411,7 @@ public void consent()
        // mxGraphComponent component = new mxGraphComponent(g);
        component = new mxGraphComponent(g);
        //component.zoom(1.5); //effettua lo zoom del grafico
-        frame = new JFrame("JGraphX Editor");
+        frame = new JFrame("KaoS");
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         /*
@@ -4387,16 +5428,17 @@ public void consent()
  
  	  
      
-      infoVar.add(String.valueOf(eta0));	//eta0 = 0.6;
-      infoVar.add(String.valueOf(beta0));	//beta0 = 0.6;
-      infoVar.add(String.valueOf(beta));	//beta0 = 0.4;
+     // infoVar.add(String.valueOf(eta0));	//eta0 = 0.6;
+     // infoVar.add(String.valueOf(beta0));	//beta0 = 0.6;
+     // infoVar.add(String.valueOf(beta));	//beta0 = 0.4;
   	  infoVar.add(String.valueOf(Math.round(tmax)));	
-  	  infoVar.add(String.valueOf(Math.round(nt)));	
+  	  infoVar.add(String.valueOf(deltat));	
 
                  Vector<String> infoData=new Vector<String>();
-                 infoData.add(String.valueOf(mu));		//mu = 9; 
+                 infoData.add(String.valueOf(eta0));		//eta0; 
                  infoData.add(String.valueOf(nCluster)); //numero di clusters
      			 infoData.add("");		//mode = competition;
+     			 infoData.add("");		//distribution 
                  
                   viewTabData(infoData); 
                  
@@ -4407,11 +5449,14 @@ public void consent()
         
         
       
-
+        
+        splitPanel2 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true,panelInizD, panelProp);
     
         
         //crea il pannello delle proprieta posto a destra
-        splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true,panelVar, panelProp);
+        splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true,panelVar, splitPanel2);
+
+        
        
        splitPanel.setDividerSize(3);
         
@@ -4429,6 +5474,8 @@ public void consent()
        
          mainPanel.setResizeWeight(0.9);
          mainPanel.setDividerSize(10);
+         
+         splitPanel2.setResizeWeight(0.5);
             
         // mainPanel.setDividerLocation(0.1);
         // panelVar.setPreferredSize(new Dimension(150, 100));
@@ -4468,11 +5515,11 @@ public void consent()
          JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_F);
 
-	 tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Data Var", null, KeyEvent.VK_C));
+	 tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Model Parameters", null, KeyEvent.VK_C));
 		
-	 tabProbabMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Probability", null, KeyEvent.VK_C));
+	 tabProbabMi = new JCheckBoxMenuItem (new MenuItemAction("Distribution", null, KeyEvent.VK_C));
                 
-        tabPropMi = new JCheckBoxMenuItem (new MenuItemAction("Global Var", null, KeyEvent.VK_C));
+        tabPropMi = new JCheckBoxMenuItem (new MenuItemAction("Solution Parameters", null, KeyEvent.VK_C));
 
  	 edgeLabelMi = new JCheckBoxMenuItem (new MenuItemAction("Show Labels", null, KeyEvent.VK_C));
       
@@ -4511,31 +5558,48 @@ public void consent()
         exitMi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
             ActionEvent.CTRL_MASK));
             
-             newMi.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-            	try
-            	{
-                g.removeCells(g.getChildVertices(g.getDefaultParent()));
-                i=0;
-                saveFileAs="NewGraph"; frame.setTitle(saveFileAs);
-                nCluster=0;
-                cell1On=false;
-       			cell2On=false;
-       			iId=-1;
-       			hId=-1;
-       			resetB(nMax);
-       			tableData.setValueAt(nCluster, 1, 1); 
-       				scrollPaneProp.setVisible(false);		 
-             			  			splitPanel.validate();
-       			 //f=new Vector<String>;
-       			 
-               
-            }
-            catch (Exception neww) {};
-                
-                //frame.setVisible(false); go();
-            }
+             newMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	try
+	            	{
+	                g.removeCells(g.getChildVertices(g.getDefaultParent()));
+	                i=0;
+	                saveFileAs="NewKaos"; frame.setTitle(saveFileAs);
+	                nCluster=0;
+	                beta=0;
+	                
+	                scrollPaneProbab.setVisible(false);		 
+	       		
+	       			tabProbabMi.setSelected(false);
+	       			tabProbabMi.setVisible(false);
+	                okSolution=false;
+	                cell1On=false;
+	       			cell2On=false;
+	       			iId=-1;
+	       			hId=-1;
+	       			resetB(nMax);
+	       			tableData.setValueAt(nCluster, 1, 1); 
+	       			scrollPaneProbab.setVisible(false);		 
+	       			//tabProbabMi.setVisible(false);
+	       			tabProbabMi.setSelected(false);
+	                
+	                titleCentral="Initial Conditions";
+	    		    panelInizD.setBorder(new TitledBorder(titleCentral));
+	                
+	                	f = new Vector<Double>(nCluster);
+	                	initF = new Vector<Double>(nCluster);
+	             			  			//splitPanel.validate();
+	       			 //f=new Vector<String>;
+	       			 
+	               
+	            }
+	            catch (Exception neww) {};
+	                
+	                //frame.setVisible(false); go();
+	            }
         });
         
         
@@ -4556,6 +5620,29 @@ public void consent()
                 	clust=new Vector<Cluster>();
                 	clust=leggi.readXmlNodi(saveFileAs);//carica il vector dei nodi
                 	
+                	param=new Vector<String>();
+                	param=leggi.readXmlParam(saveFileAs);
+                	
+                	modality=param.get(0);System.out.println(modality);
+                	distribution=param.get(1);System.out.println(distribution);
+                	mu=Integer.parseInt(param.get(2));System.out.println(mu);
+                	eta0=Double.parseDouble(param.get(3));System.out.println(eta0);
+                	beta0=Double.parseDouble(param.get(4));System.out.println(beta0);
+                	beta=Double.parseDouble(param.get(5));System.out.println(beta);	
+                	String modality2=new String();
+                	if (modality.equals("Cooperation/Competition")==true)
+                	{
+                		modality2="Coop / Comp";
+                	}
+                	else
+                	if (modality.equals("Consent/Dissent")==true)
+                	{
+                		modality2="Cons / Diss";
+                	}
+                	
+                	
+                	tableData.setValueAt(modality2, 2, 1);
+                	tableData.setValueAt(distribution, 3, 1);
                 	
                 
                 	System.out.println("lunghezze vector clust: "+clust.size());
@@ -4700,14 +5787,15 @@ public void consent()
                 }
                 try
                 {
-                wf.writeXML(clust,saveFileAs);
+                wf.writeXML(clust,saveFileAs,modality,distribution, String.valueOf(mu),String.valueOf(eta0),String.valueOf(beta0),String.valueOf(beta));
                 }
-                	catch (Exception ss){}
+                catch (Exception ss){}
                 //save_xml("prova2",graph);
             }
         });
         
-        saveAsMi.addActionListener(new ActionListener() {
+        saveAsMi.addActionListener(new ActionListener() 
+        {
             @Override
             public void actionPerformed(ActionEvent event) 
             {
@@ -4727,11 +5815,13 @@ public void consent()
                 
                 
                 WriteXMLFile wf=new WriteXMLFile();
-             try{   
+             try
+             {   
             
-                wf.writeXML(clust,saveFileAs);
+                wf.writeXML(clust,saveFileAs,modality,distribution, String.valueOf(mu),String.valueOf(eta0),String.valueOf(beta0),String.valueOf(beta));
+                }
                 //save_xml("prova2",graph);
-              }
+              
                	catch (Exception ss){}
                
             }
@@ -4797,8 +5887,29 @@ public void consent()
                       }
                        System.out.println("VertexSet:  "+graph.vertexSet());
        					System.out.println("EdgeSet:   "+graph.edgeSet());
+       					
+					        for (int i=0; i<nCluster; i++) 
+							{ 
+								for (int h=0; h<nCluster; h++) 
+								{ 
+									for (int k=0; k<nCluster; k++) 
+									{
+										
+										
+										System.out.print(B[i][h][k] + " "); 
+									}
+										System.out.println(); 
+								} 
+								System.out.println(); 
+							}
+       					
                       
             }
+            
+       
+            
+            
+            
         }); //end printMi
         
         tabVarMi.setSelected(true);
@@ -4840,8 +5951,10 @@ public void consent()
             		else
             	   if(tabProbabMi.isSelected()==true ) // non e selezionato, premo e lo seleziono per aprire la tabella
             	   {
+            	   	
 		            	if (nCluster!=0)
 		            	{
+		            		/*
 				            if ((scrollPaneCol.isVisible()==true) && (scrollPaneCol!=null))
 		            	   	{
 		            	   	  scrollPaneCol.setVisible(false);
@@ -4853,7 +5966,20 @@ public void consent()
 		            	   	  tabPropMi.setSelected(false);
  	  
             	   	        }
+		                    */	
 		            		
+		            		if (okSolution==true)
+		            		{
+		            		  titleCentral="Solution";
+    						  panelInizD.setBorder(new TitledBorder(titleCentral));
+		            		}
+		            		else
+		            		{
+		            			titleCentral="Initial Conditions";
+    						    panelInizD.setBorder(new TitledBorder(titleCentral));
+		            		
+		            		}
+		           
 		            		
 		            			viewTableF(f);
 		            		
@@ -4910,8 +6036,8 @@ public void consent()
             	   	}
             	   	if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
             	   	{
-            	   	  scrollPaneProbab.setVisible(false);
-            	   	  tabProbabMi.setSelected(false);
+            	   	  //scrollPaneProbab.setVisible(false);
+            	   	  //tabProbabMi.setSelected(false);
             	   	}
             	   	if ((scrollPaneProp.isVisible()==true) && (scrollPaneProp!=null))
             	   	{
@@ -5007,8 +6133,8 @@ public void consent()
 		            	   	}
 		            	   		if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
 		            	   	{
-		            	   	  scrollPaneProbab.setVisible(false);
-		            	   	  tabProbabMi.setSelected(false);
+		            	   	  // scrollPaneProbab.setVisible(false);
+		            	   	 // tabProbabMi.setSelected(false);
 		            	   	}
 		              
 	            			
@@ -5291,7 +6417,7 @@ public void consent()
 							{
 							   for (int k=0;k<nCluster;k++)
 							   {
-							   	if ((B[k][hId][iId]>0) && (hId!=k))
+							   	if ((B[k][hId][iId]>=0) && (hId!=k))
 							   	{
 							   		// System.out.println(hId+" "+String.valueOf(hId)+" ->> "+String.valueOf(k)+" Peso: ");
 							   		g.getModel().beginUpdate();
@@ -5528,6 +6654,7 @@ public void consent()
 					
 					setF(nCluster); 
 					
+					
 					drawClusters(nCluster);    
 					g.getView().validate();
 
@@ -5585,6 +6712,7 @@ public void consent()
 	                 tabProbabMi.setVisible(true);
 	                 
 	                 setF(nCluster); 
+	                 	
 	               }
 	               tableData.setValueAt(nCluster, 1, 1);  
 	               
@@ -5608,6 +6736,30 @@ public void consent()
         {
         	public void actionPerformed(ActionEvent event) 
             {
+            	
+            	if ((modality.equals("")==true) || ((tableData.getValueAt(2, 1).toString()).equals("")==true) )
+            	{
+            		JOptionPane.showMessageDialog 
+            		    (null,"Choose Interaction Mode ","Warning",JOptionPane.WARNING_MESSAGE);
+            	}
+            	else
+            	if ((tableData.getValueAt(3, 1).toString().equals("")==true) &&  (modality.equals("User Defined")==false))
+            	{
+	    	
+		            	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+	            	
+            	}
+            	else
+            	if ((distribution.equals("")==true) &&  (modality.equals("User Defined")==false))
+            	{
+	       	
+		            	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+		         	
+            	}
+            	else
+            	{
             	//if (sessionOpen==true)
             	{  
             	      if (check(f)==true)
@@ -5621,13 +6773,29 @@ public void consent()
 		            	   	
 		            	    if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
 		            	   	{
-		            	   	  solutionCC();
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))		
+		            	   	  {	
+		            	   	   solutionCC();
+		            	      }
+		            	      else
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Uniform")==true))		
+		            	   	  {	
+		            	   	    System.out.println("**********");
+		            	   	   solutionLU(); //soluzione uniforme e lineare
+		            	   	   
+		            	      }
+		            	   	  
 		            	   	}
 		            	   	else
 		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		            	   	{
             		           solution();
             		        }
+            		        
+            		        titleCentral="Solution";
+    						panelInizD.setBorder(new TitledBorder(titleCentral));
+    						
+    						okSolution=true;
             		        
             		       viewTableF(f);
             		       
@@ -5638,7 +6806,7 @@ public void consent()
             		         } 
             		        tabProbabMi.setVisible(true);
             		        tabProbabMi.setSelected(true);
-            		         panelProp.validate();
+            		         panelInizD.validate();
             		          
             		     }
             		     else
@@ -5692,7 +6860,15 @@ public void consent()
                sel_but.setBackground(null); 
               // go_but.setBackground(Color.BLUE); 
                
-               
+          }     
+          
+          System.out.println("Beta "+beta+ "Beta0 "+beta0+" lung "+initF.size());
+           System.out.println("Vettore Iniziale:");
+          for (int i=0;i<initF.size();i++)
+		  	{
+		  	  
+		  	  System.out.println("initF "+initF.get(i));
+		  	}
 
         }
 
@@ -5761,7 +6937,7 @@ public void consent()
                {
                	  
                	
-                   enneV.add(enne[i]);
+                   enneV.add(emme[i]);
                   i=i+delta;
                }
                while(i<nt);
@@ -5769,7 +6945,7 @@ public void consent()
             	   
 		          
             	
-            	    String text="Enne Graphic";
+            	    String text="Expected Value";
            			
       				GraphCurve gc=new GraphCurve(enneV);
       				gc.drawCurve(enneV,text);
@@ -5948,7 +7124,13 @@ public void consent()
 		             			 //h ed i nulle, assegno h
 		 						 if ((cell1On==false) && (cell2On==false))
 		 						 {
-		 						 
+		 						 	if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))
+		 						 	{
+		 						 		enneF(nCluster);
+		 						 		emmeF(nCluster);
+		 						       calculateB(nt); //crea la matrice B coop/comp primo vicino non lineare 
+		 					        }
+		 						    
 		 						   if(scrollPaneProbab!=null)
             		  					{ scrollPaneProbab.setVisible(false);}
             		  					
@@ -5999,7 +7181,8 @@ public void consent()
 		             			 	colorMi.setSelected(false);
 		             			 	
 		             			    if (scrollPaneProp.isVisible()==true)
-		             			       {	scrollPaneProp.setVisible(false); }
+		             			       {	//scrollPaneProp.setVisible(false); 
+		             			       }
 		             			 	
 		             			 	dist=4*dist;
 		             			   mov(cells,-dx,-dy);
@@ -6050,11 +7233,43 @@ public void consent()
              			  			sessionOpen=true;
 		             			 	if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
 		             			 	{
-		             			 	  cooperation();
+		             			 		if (distribution.equals("Uniform")==true)
+		             			 	  {
+		             			 	  	cooperationUnif();
+		             			 	  }
+		             			 	  else
+		             			 	  if (distribution.equals("First Neighbor")==true)
+		             			 	  {
+		             			 	  		MyEdge edgess=new MyEdge();
+						             		if ((hId!=-1) && (iId!=-1))
+											{
+											   for (int k=0;k<nCluster;k++)
+											   {
+											   	if ((B[k][hId][iId]>=0) && (hId!=k))
+											   	{
+											   		// System.out.println(hId+" "+String.valueOf(hId)+" ->> "+String.valueOf(k)+" Peso: ");
+											   		g.getModel().beginUpdate();
+											   		
+							                       edgess=graph.addEdge(String.valueOf(hId),String.valueOf(k));	
+							                       
+							                       
+							                       		                
+				        					  	   graph.setEdgeWeight(edgess,B[k][hId][iId]);
+				        					  	      					  	
+				        					  	
+				 			            			g.getModel().endUpdate();
+									
+											    }
+											   }
+											}
+		             			 	  	
+		             			 	  }
+		             			 	  
 		             			 	}
 		             			 	else
 		             			 	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		             			 	{
+		             			 		
 		             			 	  userDefined();
 		             			 	}
 		             			 
@@ -6085,7 +7300,8 @@ public void consent()
 		             			    	}
 		             			      
 		             			      if (scrollPaneProp.isVisible()==true)
-		             			       {	scrollPaneProp.setVisible(false); }
+		             			       {	//scrollPaneProp.setVisible(false);
+		             			        }
 		             			       
 		             			    }
 		             			    

@@ -17,7 +17,8 @@ import org.w3c.dom.Element;
 public class WriteXMLFile 
 {
  
-	public  void writeXML(Vector<Cluster> n, String nomefile) 
+	public  void writeXML(Vector<Cluster> n, String nomefile, String mode, String distrValue, 
+	   String muValue, String eta0Value, String beta0Value, String betaValue) 
 	{
  
 	  try 
@@ -30,6 +31,47 @@ public class WriteXMLFile
 		Document doc = docBuilder.newDocument();
 		Element rootElement = doc.createElement("Graph");
 		doc.appendChild(rootElement);
+		
+		// Parameters elements
+			Element parameters = doc.createElement("Parameters");
+			rootElement.appendChild(parameters);
+			
+			
+			// modality elements
+			Element modality = doc.createElement("modality");
+			modality.appendChild(doc.createTextNode(mode));
+			parameters.appendChild(modality);
+			
+				// distribution elements
+			Element distribution = doc.createElement("distribution");
+			distribution.appendChild(doc.createTextNode(distrValue));
+			parameters.appendChild(distribution);
+			
+			
+			// mu elements
+			Element mu = doc.createElement("mu");
+			mu.appendChild(doc.createTextNode(muValue));
+			parameters.appendChild(mu);
+			
+			// eta0 elements
+			Element eta0 = doc.createElement("eta0");
+			eta0.appendChild(doc.createTextNode(eta0Value));
+			parameters.appendChild(eta0);
+			
+				// beta0 elements
+			Element beta0 = doc.createElement("beta0");
+			beta0.appendChild(doc.createTextNode(beta0Value));
+			parameters.appendChild(beta0);
+			
+				// beta elements
+			Element beta = doc.createElement("beta");
+			beta.appendChild(doc.createTextNode(betaValue));
+			parameters.appendChild(beta);
+		
+			
+		
+			
+			
 		
 		for (int i=0;i<n.size();i++)
 		{

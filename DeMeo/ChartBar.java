@@ -30,7 +30,7 @@ super.paintComponent(g);
 if (values == null || values.length == 0)
   return;
 double minValue = 0;
-double maxValue = 1;
+double maxValue = 0.6;
 for (int i = 0; i < values.length; i++) {
   if (minValue > values[i])
     minValue = values[i];
@@ -80,6 +80,8 @@ for (int i = 0; i < values.length; i++) {
   int labelWidth = labelFontMetrics.stringWidth(names[i]);
   x = i * barWidth + (barWidth - labelWidth) / 2;
   g.drawString(names[i], x, y);
+  
+  g.drawString(String.valueOf(Math.rint(values[i]*Math.pow(10,4))/Math.pow(10,4)), x-5, valueY-5);
 }
 }
 
@@ -91,8 +93,8 @@ public static void main(String[] argv)
 	{
 	  v[i]=i;
 	}
- // ChartBar cb=new ChartBar();	
-  // cb.chart(11,v);
+ //ChartBar cb=new ChartBar();	
+  //cb.chart(11,v);
 }
 
 public void chart(int n, double[] values) 
@@ -107,7 +109,7 @@ for (int i=0;i<n;i++)
   names[i] = String.valueOf(i);
 }
 
-f.getContentPane().add(new ChartBar(values, names, "Graphic Solution"));
+f.getContentPane().add(new ChartBar(values, names, "Cluster Probabilities at Tmax"));
 
 WindowListener wndCloser = new WindowAdapter() {
   public void windowClosing(WindowEvent e) {
