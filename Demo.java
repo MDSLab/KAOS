@@ -166,7 +166,7 @@ public class Demo
 
    public static Vector<MyEdge> edges = new Vector<MyEdge>();
    public  static Vector<Double> f = new Vector<Double>();
-   public  static Vector<Double> initF = new Vector<Double>();//vector contenente i valori iniziali di probabilità dei Cluster
+   public  static Vector<Double> initF = new Vector<Double>();//vector contenente i valori iniziali di probabilita dei Cluster
    public static Vector<Cluster> clust=new Vector<Cluster>(); //vector contenente i clusters da inviare al file XML
    public static Vector<String> param=new Vector<String>(); 
    
