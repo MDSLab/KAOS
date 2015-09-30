@@ -95,6 +95,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.ListenableDirectedWeightedGraph;
 import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxIGraphLayout;
+import java.net.URL;
 
 
 @SuppressWarnings("unchecked")
@@ -514,14 +515,15 @@ public class Demo
 	             	System.out.println("beta: "+beta);
 	             	endBeta=true;
 	             }
-	            
+	            System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
               }
               else
               {
                 
-                beta=0;	System.out.println("beta: "+beta);
+                beta=0.0;	System.out.println("beta: "+beta);
                 endBeta=true;
               }
+              System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
             }   
               
             catch (NumberFormatException  ex)
@@ -538,7 +540,9 @@ public class Demo
       	
       }//end Not Linear Mode
       else
-      {beta=0;}
+      {
+      	beta=0.0;
+      }
       
       
     }//end dispayCC
@@ -844,7 +848,7 @@ public void unif2B(int iId, int hId)
     **/  
    public void calculateB(int tempo)
    {
-   	
+   	  
    	  int n=Math.round((nCluster-1)/2); 
    	
    	
@@ -853,7 +857,7 @@ public void unif2B(int iId, int hId)
 		for(int h=0; h<nCluster; h++) 
 		for(int k=0; k<nCluster; k++) 
 		{
-			B[h][k][i] = 0; 
+			B[h][k][i] = 0.0; 
 	
 		}
 		
@@ -866,7 +870,7 @@ public void unif2B(int iId, int hId)
 		for(int k=0; k<nCluster; k++) //3 indice colonna
 		{
 			if  ( (h==k) && (h==i) )
-			{ B[i][h][k]= 1; } 
+			{ B[i][h][k]= 1.0; } 
 			/*
 			if ( (Math.abs(h-k)>=mu) && (h>n+1) && (k>n+1) && (h==i) )			
 			{
@@ -884,12 +888,12 @@ public void unif2B(int iId, int hId)
 			{
 			     if ( (h==0) && (h!=k) && (i==h) )
 			     {
-			        B[i][h][k] = 1;
+			        B[i][h][k] = 1.0;
 			     }
 			     
 			     if ( (h==nCluster-1) && (h!=k) && (i==h) )
 			     {
-			        B[i][h][k] = 1;
+			        B[i][h][k] = 1.0;
 			     }
 			     
 			     if ( (h!=0) && (h!=k) && (h<k) && (i==h-1) )
@@ -899,12 +903,12 @@ public void unif2B(int iId, int hId)
 			     
 			     if ( (h!=0) && (h!=k) && (h<k) && (i==h) )
 			     {
-			        B[i][h][k] = 1 - beta0;
+			        B[i][h][k] = 1.0 - beta0;
 			     }
 			     //triangolare superiore
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h) )
 			     {
-			        B[i][h][k] =1 - ( beta0 + beta * enneF(nCluster) );
+			        B[i][h][k] =1.0 - ( beta0 + beta * enneF(nCluster) );
 			       // B[i][h][k]= 1 - ( beta0 );
 			     }
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h+1) )
@@ -928,13 +932,13 @@ public void unif2B(int iId, int hId)
 			     
 			     if (  (h<k) &&  (i==h) )
 			     {
-			        B[i][h][k] = 1 - ( beta0 + beta * enneF(nCluster)  );
+			        B[i][h][k] = 1.0 - ( beta0 + beta * enneF(nCluster)  );
 			        //B[i][h][k] = 1 - ( beta0 );//+ beta * enneF(nCluster)  );
 			     }
 			     //triangolare inferiore
 			     if (  (h>k)  && (i==h) )
 			     {
-			        B[i][h][k] = 1 - beta0; 
+			        B[i][h][k] = 1.0 - beta0; 
 			     
 			     }
 			     if ((h>k)  && (i==h-1))
@@ -1042,7 +1046,8 @@ public void unif2B(int iId, int hId)
            {         
              f.set(i,f.get(i)+deltat*df[i]);
            }
-	      
+	        
+
 	            	
 	      
 	      } //fine ciclo timesteps tempo da 1 a Nt 
@@ -1063,10 +1068,10 @@ public void unif2B(int iId, int hId)
                 
     		 printB(B,nCluster);
            
-           String text="";
+          String text="Linear Uniform Distribution Probabilities" +" th: "+String.valueOf(mu);
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
-      cb.chart(nCluster,ff);
+      cb.chart(nCluster,ff,text);
       
    } //end solutionLU   
       
@@ -1139,7 +1144,7 @@ public void unif2B(int iId, int hId)
 		  
            for (int i=0;i<nCluster;i++)
            {
-              df[i]=0;   
+              df[i]=0.0;   
               //System.out.println(i+"  "+f.get(i));
            }
            
@@ -1196,11 +1201,18 @@ public void unif2B(int iId, int hId)
                 System.out.println("\n\nSomma Finale: "+somma+"\n\n");
                 
            printB(B,nCluster);
-           
-           String text="Graphic";
+           String text=new String();
+           if (beta==0)
+           {
+             text="First Neighboor Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
+           }
+           else
+           {
+             text="First Neighboor Non Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
+           }
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
-      cb.chart(nCluster,ff);
+      cb.chart(nCluster,ff,text);
    }
    
    
@@ -1287,7 +1299,7 @@ public void unif2B(int iId, int hId)
 		  
            for (int i=0;i<nCluster;i++)
            {
-              df[i]=0;   
+              df[i]=0.0;   
               //System.out.println(i+"  "+f.get(i));
            }
            
@@ -1358,10 +1370,10 @@ public void unif2B(int iId, int hId)
 			System.out.println(); 
 		}
            
-           String text="Cluster probabilities at Tmax";
+           String text="User Defined Distribution Probabilities";
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
-      cb.chart(nCluster,ff);
+      cb.chart(nCluster,ff,text);
    }
    
     /** Convert RGB Color in Hexadecimal Color
@@ -1832,7 +1844,7 @@ public void userDefined()
 								  
 								   for (int i=0;i<nCluster;i++)
 								   {
-								     B[hId][hId][i]=1;
+								     //B[hId][hId][i]=1;
 								   }
 								   
 								   
@@ -2883,7 +2895,7 @@ public void consent()
 			}
 		//	else
 			{
-			B[h][k][i] = 0; 
+			B[h][k][i] = 0.0; 
 	  	    }
 	
 		}
@@ -2891,7 +2903,7 @@ public void consent()
 		for(int h=0; h<n; h++) 
        	for (int i=0;i<n;i++)
 		             			   {
-		             			      B[h][h][i]=1;
+		             			      B[h][h][i]=1.0;
 		             			   }
 		
   }
@@ -4375,6 +4387,7 @@ public void consent()
 		             	      sessionOpen=true;
 		             	   	  okNum=1;
 		             	   	  f.setElementAt(valore,r);
+		             	   	  initF.setElementAt(valore,r);
 		             	   	  
 		             	   	  if (resizeMi.isSelected()==true)
 		             	   	  {
@@ -4402,8 +4415,9 @@ public void consent()
 		               	okNum=1;
 		             	sessionOpen=true;
 		      	        table.setValueAt("0.0",r,1);
-		      	        double num=0;
+		      	        double num=0.0;
 		      	         f.setElementAt(num,r);
+		      	         initF.setElementAt(num,r);
 		      	          if (resizeMi.isSelected()==true)
 		      	          {
 		      	            resizeCluster(r,valore);
@@ -4447,8 +4461,9 @@ public void consent()
 		      	{
 		      		
 		      	   table.setValueAt("0.0",r,1);
-		      	   double num=0;
+		      	   double num=0.0;
 		      	   f.setElementAt(num,r);
+		      	   initF.setElementAt(num,r);
 		      	  
 		                 
 		      	}
@@ -4938,10 +4953,15 @@ public void consent()
 		final long serialVersionUID = 1L;
 		
 		JPopupMenu menu = new JPopupMenu();
-		final ImageIcon iconEdit=new ImageIcon ("icons/edit.png");
-		final ImageIcon iconRemove=new ImageIcon ("icons/remove.png");
-		final ImageIcon iconSelectAll=new ImageIcon ("icons/selectAll.png");
-		final ImageIcon iconSelf=new ImageIcon ("icons/self.png");
+                URL img20 = getClass().getResource("icons/edit.png");
+              
+		final ImageIcon iconEdit=new ImageIcon (img20);
+                 URL img21 = getClass().getResource("icons/remove.png");
+		final ImageIcon iconRemove=new ImageIcon (img21);
+                 URL img22 = getClass().getResource("icons/selectAll.png");
+		final ImageIcon iconSelectAll=new ImageIcon (img22);
+                 URL img23 = getClass().getResource("icons/self.png");
+		final ImageIcon iconSelf=new ImageIcon (img23);
 		
 		//GraphLayoutCache cache=graph.getGraphLayoutCache();
 		if (cell != null) 
@@ -5353,12 +5373,6 @@ public void consent()
 		
 		//GraphConstants.setLabelAlongEdge(stil, true);
 		
-		
-	
-	
-	   
-		
-		
 		//GraphConstants.setLineStyle(stil, GraphConstants.STYLE_SPLINE);
 		mxStylesheet foo = new mxStylesheet();
 		foo.setDefaultEdgeStyle(stil);
@@ -5495,13 +5509,18 @@ public void consent()
         Demo cc = new Demo();
         
         JMenuBar menubar = new JMenuBar();
-        
-        final ImageIcon iconNew = new ImageIcon("icons/exit1.png");
-        final ImageIcon iconOpen = new ImageIcon("icons/open1.png");
-        final ImageIcon iconSave = new ImageIcon("icons/save1.png");
-        final ImageIcon iconPng = new ImageIcon("icons/image.png");
+         URL img30 = getClass().getResource("icons/exit1.png");
+        final ImageIcon iconNew = new ImageIcon(img30);
+        URL img31 = getClass().getResource("icons/open1.png");
+        final ImageIcon iconOpen = new ImageIcon(img31);
+        URL img32 = getClass().getResource("icons/save1.png");
+        final ImageIcon iconSave = new ImageIcon(img32);
+        URL img33 = getClass().getResource("icons/image.png");
+        final ImageIcon iconPng = new ImageIcon(img33);
+        URL img34 = getClass().getResource("icons/exit1.png");
         final ImageIcon iconExit = new ImageIcon();
-        final ImageIcon iconPrint = new ImageIcon("icons/print1.png");
+        URL img35 = getClass().getResource("icons/print1.png");
+        final ImageIcon iconPrint = new ImageIcon(img35);
 
 		//Menu File
        final  JMenu fileMenu = new JMenu("File");
@@ -5526,8 +5545,10 @@ public void consent()
         colorMi = new JCheckBoxMenuItem (new MenuItemAction("Change Colors", null, KeyEvent.VK_C));
         
         resizeMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Resizing", null, KeyEvent.VK_C));
-
-
+     
+     final  JMenuItem initMi = new JMenuItem(new MenuItemAction("Initial Distribution", null, 
+                KeyEvent.VK_C));
+     
        
 
         //JMenuItem copyMi = new JMenuItem(new MenuItemAction("Copy", null, KeyEvent.VK_C));
@@ -5569,9 +5590,10 @@ public void consent()
 	                i=0;
 	                saveFileAs="NewKaos"; frame.setTitle(saveFileAs);
 	                nCluster=0;
-	                beta=0;
+	                beta=0.0;
 	                
-	                scrollPaneProbab.setVisible(false);		 
+	                scrollPaneProbab.setVisible(false);
+                         scrollPaneProp.setVisible(false);
 	       		
 	       			tabProbabMi.setSelected(false);
 	       			tabProbabMi.setVisible(false);
@@ -5600,6 +5622,71 @@ public void consent()
 	                
 	                //frame.setVisible(false); go();
 	            }
+        });
+        
+                 
+             initMi.addActionListener(new ActionListener() 
+             {
+             	
+		            @Override
+		            public void actionPerformed(ActionEvent event) 
+		            {
+		              if (nCluster>0)
+             	      {
+		            	
+		            	try
+		            	{
+		                
+		                beta=0.0;
+		                 //	f = new Vector<Double>(nCluster);
+		                
+		                //scrollPaneProbab.setVisible(false);
+	                        // scrollPaneProp.setVisible(false);
+		       		
+		       		//	tabProbabMi.setSelected(true);
+		       		//	tabProbabMi.setVisible(true);
+		                okSolution=false;
+		                cell1On=false;
+		       			cell2On=false;
+		       			iId=-1;
+		       			hId=-1;
+		       			resetB(nMax);
+		       			//tableData.setValueAt(nCluster, 1, 1); 
+		       			//scrollPaneProbab.setVisible(false);		 
+		       			//tabProbabMi.setVisible(false);
+		       			
+		                
+		                
+		               
+		                	scrollPaneProbab.setVisible(false);
+		              
+		                	for (int i=0;i<initF.size();i++)
+		                	{
+		                		f.set(i,initF.get(i));
+		                	  
+		                	  System.out.println(f.get(i));
+		                	}
+		                
+		                
+		                	//
+		                			viewTableF(f);
+		                	scrollPaneProbab.setVisible(true);
+		                		
+		                		titleCentral="Initial Conditions";
+		    		    panelInizD.setBorder(new TitledBorder(titleCentral));
+		                
+		                	
+		             			  splitPanel.validate();
+		       			 //f=new Vector<String>;
+		       			 
+		               
+		            }
+		            catch (Exception newwa) {System.out.println("ecc");};
+		                
+		                //frame.setVisible(false); go();
+		            }
+		            
+	         }
         });
         
         
@@ -5669,7 +5756,8 @@ public void consent()
 					{
   						double p = Double.parseDouble(clust.get(j).getProb());
   							//p=round(p,6);
-  	 				   f.add(p);					  
+  	 				   f.add(p);
+  	 				   initF.add(p);					  
 					}
                 			
                 			 unParsing(parola,nCluster);
@@ -6182,6 +6270,7 @@ public void consent()
         viewMenu.add(edgeLabelMi);
          viewMenu.add(colorMi);
          viewMenu.add(resizeMi);
+         viewMenu.add(initMi);
 
         menubar.add(fileMenu);
         
@@ -6199,44 +6288,50 @@ public void consent()
        
        
        
-       
-       	final ImageIcon sel = new ImageIcon("icons/sel.png");
-    	
-    	final ImageIcon nodo = new ImageIcon("icons/nodo.png");
-    	
-    	final ImageIcon rect = new ImageIcon("icons/rect.png");
+       URL img1 = getClass().getResource("icons/sel.png");
+       	final ImageIcon sel = new ImageIcon(img1);
+    	URL img2 = getClass().getResource("icons/nodo.png");
+    	final ImageIcon nodo = new ImageIcon(img2);
+    	//URL img3 = getClass().getResource("icons/rect.png");
+        final ImageIcon rect = new ImageIcon("icons/rect.png");
       
-    	final ImageIcon triangle = new ImageIcon("icons/triangle.png");
-      
-        final ImageIcon freccia= new ImageIcon("icons/freccia.png");
+       	final ImageIcon triangle = new ImageIcon("icons/triangle.png");
+      URL img4 = getClass().getResource("icons/freccia.png");
+        final ImageIcon freccia= new ImageIcon(img4);
+        URL img5 = getClass().getResource("icons/curva.png");
+         final ImageIcon curva = new ImageIcon(img5);
         
-         final ImageIcon curva = new ImageIcon("icons/curva.png");
+        URL img6 = getClass().getResource("icons/canc.png");
+        final ImageIcon canc = new ImageIcon(img6);
+        URL img7 = getClass().getResource("icons/select.png");
+        final ImageIcon select = new ImageIcon(img7);
+        URL img8 = getClass().getResource("icons/zoomp.png");
+        final ImageIcon zoomp = new ImageIcon(img8);
+        URL img9 = getClass().getResource("icons/zoomm.png");
+        final ImageIcon zoomm = new ImageIcon(img9);
+        URL img10 = getClass().getResource("icons/undo.png");
+         final ImageIcon undo = new ImageIcon(img10);
+       URL img11 = getClass().getResource("icons/redo.png");
+        final ImageIcon redo= new ImageIcon(img11);
         
-        
-        final ImageIcon canc = new ImageIcon("icons/canc.png");
-        
-        final ImageIcon select = new ImageIcon("icons/select.png");
-        
-        final ImageIcon zoomp = new ImageIcon("icons/zoomp.png");
-        final ImageIcon zoomm = new ImageIcon("icons/zoomm.png");
-        
-         final ImageIcon undo = new ImageIcon("icons/undo.png");
-       
-        final ImageIcon redo= new ImageIcon("icons/redo.png");
-        
-         final ImageIcon piu= new ImageIcon("icons/piu.png");
-         final ImageIcon meno= new ImageIcon("icons/meno.png");
-        
-         final ImageIcon go= new ImageIcon("icons/go.png");
+        URL img42 = getClass().getResource("icons/piu.png");
+         final ImageIcon piu= new ImageIcon(img42);
          
-         final ImageIcon bar= new ImageIcon("icons/bar.png");
+         URL img43 = getClass().getResource("icons/meno.png");
+         final ImageIcon meno= new ImageIcon(img43);
          
-         final ImageIcon curve= new ImageIcon("icons/curve.png");
+         
+        URL img14 = getClass().getResource("icons/go.png");
+         final ImageIcon go= new ImageIcon(img14);
+         URL img15 = getClass().getResource("icons/bar.png");
+         final ImageIcon bar= new ImageIcon(img15);
+         URL img16 = getClass().getResource("icons/curve.png");
+         final ImageIcon curve= new ImageIcon(img16);
         
         
  		JButton sel_but = new JButton(sel);      
     	JButton nodo_but = new JButton(nodo);
-    	JButton rect_but = new JButton(rect);
+       JButton rect_but = new JButton(rect);
     	JButton triangle_but = new JButton(triangle);
         freccia_but = new JButton(freccia);
         JButton curva_but = new JButton(curva);
@@ -6878,7 +6973,17 @@ public void consent()
         bar_but.addActionListener(new ActionListener() 
         {
         	public void actionPerformed(ActionEvent event) 
-            {
+            {  
+               String text=new String();
+               String linearity=new String();
+               if (beta==0)
+               {
+                 linearity="Linear";
+               }
+               else
+               {
+                linearity="Non Linear";
+               }
             	if ((f.size()>0) && (nCluster>0))
             	{  
             	   double[] ff=new double [nCluster];
@@ -6888,11 +6993,17 @@ public void consent()
 		             ff[i]=f.get(i);
 		             
 		           }
-            	
-            	    String text="Graphic";
+            	if (okSolution==false)
+            	{
+            	    text="Initial Distribution";
+                }
+                else
+                {
+                  text=linearity+"  "+distribution+"  th: "+String.valueOf(mu);
+                }
            			String[] s= new String [nCluster];
       				ChartBar cb=new ChartBar(ff, s, text);
-      				cb.chart(nCluster,ff);
+      				cb.chart(nCluster,ff,text);
 	            
             	}
             	

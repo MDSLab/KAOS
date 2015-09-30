@@ -29,8 +29,8 @@ public void paintComponent(Graphics g) {
 super.paintComponent(g);
 if (values == null || values.length == 0)
   return;
-double minValue = 0;
-double maxValue = 0.6;
+double minValue = 0.0;
+double maxValue = 1.0;
 for (int i = 0; i < values.length; i++) {
   if (minValue > values[i])
     minValue = values[i];
@@ -43,7 +43,7 @@ int clientWidth = d.width;
 int clientHeight = d.height;
 int barWidth = clientWidth / values.length;
 
-Font titleFont = new Font("SansSerif", Font.BOLD, 20);
+Font titleFont = new Font("Arial", Font.BOLD, 16);
 FontMetrics titleFontMetrics = g.getFontMetrics(titleFont);
 Font labelFont = new Font("SansSerif", Font.PLAIN, 10);
 FontMetrics labelFontMetrics = g.getFontMetrics(labelFont);
@@ -97,7 +97,7 @@ public static void main(String[] argv)
   //cb.chart(11,v);
 }
 
-public void chart(int n, double[] values) 
+public void chart(int n, double[] values, String title2) 
 {
 JFrame f = new JFrame();
 f.setSize(600, 400);
@@ -109,7 +109,7 @@ for (int i=0;i<n;i++)
   names[i] = String.valueOf(i);
 }
 
-f.getContentPane().add(new ChartBar(values, names, "Cluster Probabilities at Tmax"));
+f.getContentPane().add(new ChartBar(values, names, title2));
 
 WindowListener wndCloser = new WindowAdapter() {
   public void windowClosing(WindowEvent e) {
