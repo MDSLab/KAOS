@@ -7,17 +7,22 @@ To compile under Linux:
  
     $javac *.java
  
-    $jar cvf ../DeMeo.jar *.class
+    $jar cvf ../Kaos.jar *.class
  
     $cd ..
  
-    $javac -cp jgraph-5.13.0.0.jar:jgrapht-ext-0.9.1-uber.jar:jgraphx-2.0.0.1.jar:tablelayout.jar:DeMeo.jar:. JGraphTXAdapter.java
- 
-    $javac -cp jgraph-5.13.0.0.jar:jgrapht-ext-0.9.1-uber.jar:jgraphx-2.0.0.1.jar:tablelayout.jar:DeMeo.jar:. Demo.java
- 
-    $jar -cvmf MANIFEST.MF kaos.jar *.jar *.class DeMeo icons
+    $jar -cvmf MANIFEST.MF kaos.jar  *.class Kaos icons org layout com
  
  
 To run under Linux:
 
     $java -jar kaos.jar
+    
+To compile under Windows:
+   
+    javac Kaos\*.java
+    javac *.java
+    jar –cvfm  kaos.jar  manifest.mf   *.class  org  layout  icons  Kaos  com
+
+To start the tool: 
+    java –jar kaos.jar
