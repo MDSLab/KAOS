@@ -19,10 +19,15 @@ To run under Linux:
     $java -jar kaos.jar
     
 To compile under Windows:
-     cd kaos
+
+    cd kaos
+    
     javac Kaos\*.java 
+    
     javac *.java
+    
     jar –cvfm  kaos.jar  manifest.mf   *.class  org  layout  icons  Kaos  com
 
 To start the tool: 
+
     java –jar kaos.jar
