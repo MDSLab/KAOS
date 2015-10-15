@@ -3,7 +3,7 @@ A kinetic theory of active particles modeling and analysis tool
 
 To compile under Linux:
 
-    $cd DeMeo
+    $cd Kaos
  
     $javac *.java
  
@@ -19,8 +19,8 @@ To run under Linux:
     $java -jar kaos.jar
     
 To compile under Windows:
-   
-    javac Kaos\*.java
+     cd kaos
+    javac Kaos\*.java 
     javac *.java
     jar –cvfm  kaos.jar  manifest.mf   *.class  org  layout  icons  Kaos  com
 
