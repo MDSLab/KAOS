@@ -1,5 +1,5 @@
-package DeMeo;
-import DeMeo.*;
+package Kaos;
+import Kaos.*;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

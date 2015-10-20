@@ -3,12 +3,15 @@
  	* Kinetic Theory for Active Particles (KAOS)
  	* @author Ing. Giulio De Meo 
 **/
-//import DeMeo.*;
-import DeMeo.Cluster;
-import DeMeo.WriteXMLFile;
-import DeMeo.ReadXMLFile;
-import DeMeo.ChartBar;
-import DeMeo.GraphCurve;
+
+import Kaos.Cluster;
+import Kaos.WriteXMLFile;
+import Kaos.ReadXMLFile;
+import Kaos.ChartBar;
+import Kaos.GraphCurve;
+import javax.swing.border.Border;
+import javax.swing.BorderFactory;
+import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import java.awt.event.*;
@@ -104,18 +107,11 @@ public class Demo
 {
 //	public Vector<Nodo> n=new Vector<Nodo>();//vector dei nodi  inseriti nel grafico
 //	public Vector<Edge> a=new Vector<Edge>();//vector degli archi inseriti nel grafico
-    static  JButton nodo_but;
-    static  JButton rect_but;
-    static  JButton triangle_but;
-    public static JButton freccia_but;    
-    static JButton curve_but;
-    static JButton piu_but;
-    static JButton meno_but;
-    static JButton go_but;
+  
     public static JFrame frame;
-    static JButton canc_but;
+
     public static int i=0;
-    public String saveFileAs;
+    public static String saveFileAs;
     public mxGraphView view;
     public mxUndoManager undoMgr = new mxUndoManager();
     public String edgeStyle;
@@ -126,7 +122,7 @@ public class Demo
 	public static Vector<String> items;
 	public int nPos; //posizione del vertex selezionato all'interno del vector n
 	public int aPos; //posizione dell' edge  selezionato all'interno del vector a
-	public String oldLabel;
+	public String oldLabel,nameTxt;
 	public boolean labelChanged;
 	public static final String fillcolor = "#D3D3D3";//colore turchese di background cella con probabilita modificata !=0
 	public static double sizeChangedCell;//dimensione cella proporzionale alla probabilita inserita
@@ -151,6 +147,10 @@ public class Demo
 	public static double emme[];
 	public static double df[];
 	
+	public static int opt;
+	
+    public static JButton go_but,freccia_but, select_but, redo_but, undo_but, bar_but, sel_but,nodo_but,rect_but, curva_but, triangle_but, curve_but, piu_but, meno_but, canc_but, zoomp_but, zoomm_but;
+	
 	
 	public static boolean sessionOpen; // se true indica che la sessione e aperta, hId e iId assegnati
 	public boolean tabVarOpen; 
@@ -167,10 +167,12 @@ public class Demo
 
    public static Vector<MyEdge> edges = new Vector<MyEdge>();
    public  static Vector<Double> f = new Vector<Double>();
+   public static Vector <Double> enneV=new Vector<Double>();
    public  static Vector<Double> initF = new Vector<Double>();//vector contenente i valori iniziali di probabilita dei Cluster
    public static Vector<Cluster> clust=new Vector<Cluster>(); //vector contenente i clusters da inviare al file XML
    public static Vector<String> param=new Vector<String>(); 
-   
+    public static Vector<String> vecTxt=new Vector<String>(); //vector contenente le righe txt da salvare nel file solution.txt
+      public static Vector<String> labels=new Vector<String>(); 
     //non permette di creare piu edge tra nodi. 
     public ListenableDirectedWeightedGraph<String, MyEdge> graph = new ListenableDirectedWeightedGraph<String, MyEdge>(MyEdge.class);
     
@@ -195,6 +197,298 @@ public class Demo
    public static double average,deviation; //variables in Gaussian Distribution
    public static String titleCentral=new String(); //title of central Panel
    public static boolean okSolution; // it's true if solution has been calculated
+   public    JMenuItem saveSolMi;
+   
+   /** Create text file of Cluster Probabilities (Solution) to be saved 
+   **/
+   public void saveProbTxt()
+   {
+   	 vecTxt=new Vector<String>();
+   	 String nameModel= "Model Name: "+saveFileAs.substring(saveFileAs.lastIndexOf("\\")+1,saveFileAs.length());
+     vecTxt.add(nameModel);
+     vecTxt.add("\nCluster\tProbability");              	 
+	 for (int i=0;i<nCluster;i++)
+	 {
+	   	vecTxt.add(labels.get(i)+"\t"+String.valueOf(f.get(i)));
+	 }
+	  
+	  nameTxt = saveAs();   
+	           
+     if ((nameTxt.equals("")==false) && (nameTxt!=null))
+     {
+     	if (nameTxt.indexOf(".")!=-1)
+     	{
+	     nameTxt= nameTxt.substring( 0,nameTxt.lastIndexOf("."));
+	    }  
+	     nameTxt=nameTxt+".txt";	           
+	 }
+     writeTxt(nameTxt,vecTxt);
+   }
+   
+      /** Create text file of Expected Values to be saved 
+       **/
+   public void saveExpecTxt()
+   {
+   	 String nameModel= "Model Name: "+saveFileAs.substring(saveFileAs.lastIndexOf("\\")+1,saveFileAs.length());
+   	 vecTxt=new Vector<String>();
+     vecTxt.add(nameModel);
+     vecTxt.add("\nTime\tE(t)");    
+     
+     enneV=new Vector<Double>();
+            	  int i=0; 
+            	  int delta=(int)(nt/tmax);
+                do
+               {
+               	  
+               	
+                   enneV.add(emme[i]);
+                  i=i+delta;
+               }
+               while(i<nt);
+             	 
+	 for (i=0;i<enneV.size();i++)
+	 {
+	   	vecTxt.add(String.valueOf(i)+"\t"+String.valueOf(enneV.get(i)));
+	   	
+	 }
+	 String nameTxt = saveAs();           
+     if ((nameTxt.equals("")==false) && (nameTxt!=null))
+     {
+     	if (nameTxt.indexOf(".")!=-1)
+     	{
+	     nameTxt= nameTxt.substring( 0,nameTxt.lastIndexOf("."));
+	    }  
+	     nameTxt=nameTxt+".txt";	           
+	 }
+     writeTxt(nameTxt,vecTxt);
+   }
+   
+   /** Create 2 text files: Cluster Probabilities and Expected Values 
+       **/
+   public void saveEFTxt()
+   {
+   	 vecTxt=new Vector<String>();
+   	 String nameModel= "Model Name: "+saveFileAs.substring(saveFileAs.lastIndexOf("\\")+1,saveFileAs.length());
+     vecTxt.add(nameModel);
+     String name1=new String();
+     String name2=new String();
+     
+     vecTxt.add("\nCluster\tProbability");              	 
+	 for (int i=0;i<nCluster;i++)
+	 {
+	   	vecTxt.add(labels.get(i)+"\t"+String.valueOf(f.get(i)));
+	 }
+	  
+	  nameTxt = saveAs();   
+	           
+     if ((nameTxt.equals("")==false) && (nameTxt!=null))
+     {
+     	if (nameTxt.indexOf(".")!=-1)
+     	{
+	     nameTxt= nameTxt.substring( 0,nameTxt.lastIndexOf("."));
+	    }  
+	     nameTxt=nameTxt;
+	     	           
+	 }
+	 
+	 name1=nameTxt+"-sol.txt";
+     writeTxt(name1,vecTxt);
+     
+     vecTxt=new Vector<String>();
+     vecTxt.add(nameModel);
+     vecTxt.add("\nTime\tE(t)");    
+     
+     enneV=new Vector<Double>();
+            	  int i=0; 
+            	  int delta=(int)(nt/tmax);
+                do
+               {
+               	  
+               	
+                   enneV.add(emme[i]);
+                  i=i+delta;
+               }
+               while(i<nt);
+             	 
+	 for (i=0;i<enneV.size();i++)
+	 {
+	   	vecTxt.add(String.valueOf(i)+"\t"+String.valueOf(enneV.get(i)));
+	   	
+	 }
+	 name2=nameTxt+"-expec.txt";     
+     
+     writeTxt(name2,vecTxt);
+   }
+   
+    /** Save a txt file with specified name namef
+   	* @param namef name of the TXT file to be saved
+    * @param  vett  Vector of string that the file should contain
+    **/ 
+   	public static void writeTxt (String namef,Vector vett)
+	{
+		int i;
+		try
+		{
+			
+			BufferedWriter out= new BufferedWriter (
+				new FileWriter (namef));
+				String buffer="";
+			i=0;
+			while (i<vett.size())
+			{
+			
+				out.write((String) (vett.elementAt(i)));
+			
+				out.newLine();
+				i++;
+			}	
+			out.close();
+		System.out.println("File : "+namef+" success saved .");
+		} catch (Exception e) {} 
+	}
+   
+   
+   /** Start Solution
+    **/ 
+   public void  start()
+   {
+   	if ((modality.equals("")==true) || ((tableData.getValueAt(2, 1).toString()).equals("")==true) )
+            	{
+            		JOptionPane.showMessageDialog 
+            		    (null,"Choose Interaction Mode ","Warning",JOptionPane.WARNING_MESSAGE);
+            	}
+            	else
+            	if ((tableData.getValueAt(3, 1).toString().equals("")==true) &&  (modality.equals("User Defined")==false))
+            	{
+	    	
+		            	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+	            	
+            	}
+            	else
+            	if ((distribution.equals("")==true) &&  (modality.equals("User Defined")==false))
+            	{
+	       	
+		            	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+		         	
+            	}
+            	else
+            	{
+            	//if (sessionOpen==true)
+            	{  
+            	      if (check(f)==true)
+            		     {  
+            		       if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
+		            	   	{
+		            	   	  scrollPaneProbab.setVisible(false);
+		            	   	  panelProp.validate();
+		            	   	  
+		            	   	}
+		            	   	
+		            	    if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
+		            	   	{
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))		
+		            	   	  {	
+		            	   	   solutionCC();
+		            	      }
+		            	      else
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Uniform")==true))		
+		            	   	  {	
+		            	   	    System.out.println("**********");
+		            	   	   solutionLU(); //soluzione uniforme e lineare
+		            	   	   
+		            	      }
+		            	   	  
+		            	   	}
+		            	   	else
+		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
+		            	   	{
+            		           solution();
+            		        }
+            		        
+            		        titleCentral="Solution";
+    						panelInizD.setBorder(new TitledBorder(titleCentral));
+    						
+    						okSolution=true;
+    						
+    						
+            		        
+            		       viewTableF(f);
+            		       
+            		       
+            		       if(scrollPaneProbab!=null) 
+            		         {
+            		           scrollPaneProbab.setVisible(true);
+            		         } 
+            		        tabProbabMi.setVisible(true);
+            		        tabProbabMi.setSelected(true);
+            		         panelInizD.validate();
+            		          
+            		     }
+            		     else
+            		     {
+            		     if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
+                        tabProbabMi.setSelected(true);
+            		    JOptionPane.showMessageDialog 
+            		    (null,"The Sum of cluster probabilities is not equal than 1","Warning",JOptionPane.WARNING_MESSAGE);
+            		     
+            		     }
+            		/*
+            		double somma=0;
+            		for (int i=0;i<nCluster;i++)
+  					{
+  	 				 somma=somma+f.get(i);
+  					}
+				  	if (somma!=1)
+				  	{
+				  		
+			
+            		  	if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
+                        tabProbabMi.setSelected(true);
+            		    JOptionPane.showMessageDialog (null,"Error: the sum of cluster probabilities is different from 1","Warning",JOptionPane.WARNING_MESSAGE);
+            		  }
+            		  else          	
+	            	{
+		               
+		               solution();
+		            }
+                   */
+	            
+            	}
+            	
+            	
+            	
+            	sel_but.setSelected(false);
+        	   nodo_but.setSelected(false);
+               rect_but.setSelected(false);
+               triangle_but.setSelected(false);
+               go_but.setSelected(true);
+               piu_but.setSelected(false);
+              meno_but.setSelected(false);
+               canc_but.setSelected(false);
+               nodo_but.setBackground(null);
+               triangle_but.setBackground(null);
+               rect_but.setBackground(null);
+               freccia_but.setBackground(null);
+               canc_but.setBackground(null);  
+                curva_but.setSelected(false);
+               curva_but.setBackground(null); 
+               sel_but.setBackground(null); 
+              // go_but.setBackground(Color.BLUE); 
+               
+          }     
+          
+          System.out.println("Beta "+beta+ "Beta0 "+beta0+" lung "+initF.size());
+           System.out.println("Vettore Iniziale:");
+          for (int i=0;i<initF.size();i++)
+		  	{
+		  	  
+		  	  System.out.println("initF "+initF.get(i));
+		  	}
+   
+   
+   }
    
    
    /** Print the 3D Matrix
@@ -272,7 +566,7 @@ public class Demo
     	boolean end2=false;
     	boolean end=false;
     	
-    	 String[] items = {"Linear", "Not Linear"};
+    	 String[] items = {"Linear", "Non Linear"};
         JComboBox combo = new JComboBox(items);	
        
     	
@@ -401,13 +695,13 @@ public class Demo
       
     }//end dispayGauss
    
-    /** Open Menu windows to set parameter mu, linear, not linear in Coop/Competition mode
+    /** Open Menu windows to set parameter mu, linear, non linear in Coop/Competition mode
    	 **/  
      public static void displayCC() 
     {
     	boolean end=false;
     	
-    	 String[] items = {"Linear", "Not Linear"};
+    	 String[] items = {"Linear", "Non Linear"};
         JComboBox combo = new JComboBox(items);	
        
     	
@@ -486,7 +780,7 @@ public class Demo
         
       }
       
-      if (combo.getSelectedItem().equals("Not Linear")==true) //caso non lineare, inserire il parametro Beta
+      if (combo.getSelectedItem().equals("Non Linear")==true) //caso non lineare, inserire il parametro Beta
       {
       	
       	boolean endBeta=false;
@@ -538,7 +832,7 @@ public class Demo
       	
       	
       	
-      }//end Not Linear Mode
+      }//end Non Linear Mode
       else
       {
       	beta=0.0;
@@ -5211,6 +5505,7 @@ public void consent()
     	
   
       okSolution=false;
+      						
     
       screenX=(int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
       screenY=(int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
@@ -5526,6 +5821,9 @@ public void consent()
        final  JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         
+        
+        
+        
         //Menu Edit
         //JMenu editMenu = new JMenu("Edit");
         //editMenu.setMnemonic(KeyEvent.VK_F);
@@ -5533,6 +5831,14 @@ public void consent()
          //Menu View
          JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_F);
+        
+         //Menu Solution
+         JMenu solutionMenu = new JMenu("Solution");
+         solutionMenu.setMnemonic(KeyEvent.VK_F);
+        
+        	//Menu Help
+       final  JMenu helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_F);
 
 	 tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Model Parameters", null, KeyEvent.VK_C));
 		
@@ -5572,12 +5878,58 @@ public void consent()
                 
      final    JMenuItem newMi = new JMenuItem(new MenuItemAction("Close", iconNew, 
                 KeyEvent.VK_N));
+                
+      final    JMenuItem helpMi = new JMenuItem(new MenuItemAction("Help Kaos", null, 
+                KeyEvent.VK_N));
+                
+      final    JMenuItem aboutMi = new JMenuItem(new MenuItemAction("About Kaos", null, 
+                KeyEvent.VK_N));
+                
+      final    JMenuItem startMi = new JMenuItem(new MenuItemAction(" Start ", null, 
+                KeyEvent.VK_N));
+                
+       saveSolMi = new JMenuItem(new MenuItemAction(" Save ", null, 
+                KeyEvent.VK_N));
 
         JMenuItem exitMi = new JMenuItem("Exit", iconExit);
         exitMi.setMnemonic(KeyEvent.VK_E);
-        exitMi.setToolTipText("Esci");
+        exitMi.setToolTipText("Close Kaos");
+        saveSolMi. setToolTipText("Save Solution");
+        startMi.setToolTipText("Calculate Solution");
+        
+        
         exitMi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
             ActionEvent.CTRL_MASK));
+            
+            saveSolMi.setVisible(false);
+            startMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	okSolution=true;
+	       			start();
+	       			saveSolMi.setVisible(true);
+    						
+	            
+	            }
+              });
+              
+              //save current model in xml file
+             saveSolMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+		            	vecTxt=new Vector<String>();
+	               
+	                     updateClusters();
+	                     
+	                     OptionPan op=new OptionPan();
+	                    op.openPan(); 	
+	            }
+	            
+              });
             
              newMi.addActionListener(new ActionListener() 
              {
@@ -5598,6 +5950,8 @@ public void consent()
 	       			tabProbabMi.setSelected(false);
 	       			tabProbabMi.setVisible(false);
 	                okSolution=false;
+	                saveSolMi.setVisible(false);
+    						
 	                cell1On=false;
 	       			cell2On=false;
 	       			iId=-1;
@@ -5624,6 +5978,73 @@ public void consent()
 	            }
         });
         
+        helpMi.addActionListener(new ActionListener() 
+             {
+             	String helpK=new String();
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	helpK="KAOS: a Kinetic Theory Tool for the Modeling of Complex Social Systems\n\n"+
+	            	"KAOS is a tool designed for the definition and the transient solution of KTAP models.\n"+  
+	            	"KAOS provides a graphical interface . The modeler can graphically represent the KTAP model by enumerating\n"+ 
+	            	"the number of clusters. Clusters are depicted as circles in the central panel.\n"+
+	            	"Model parameters can be set by filling the text fields in the Model Parameters box on the right.\n"+
+	            	"In particular, the number of clusters N, the encounter rate, the interaction mode"+
+	            	"and the transition probabilities\n(table of games) can be set. "+
+	            	"In the Initial Condition box, the modeler can set the initial condition in terms of\nthe probability distribution on"+
+                "the clusters at t=0. Finally, in the Solution Parameters box, the final time and the\ntime step of the transient "+
+                "analysis can be set.\n"+
+                "At the time being, the tool supports Competition/Cooperation and consensus/dissent interaction modes.\n"+
+                "When these interaction modes are set, the modeler can choose the value of the threshold  as well as the associated distribution\n"+
+                "of the transition probabilities. The tool allows to set a First Neighbor approach specifying the transition probability to\n"+
+                "move to the first neighbor or a uniform distribution. If the first neighbor approach is chosen, the modeler can choose\n"+
+                "between a linear solution (i.e., the transition probability is constant along the whole solution) or a non-linear one\n"+
+                "(i.e.the transition probability changes as a function of the probability distribution on the clusters at the considered time\n"+
+                "instant through a non-linearity factor). All these choices are performed through user-friendly wizards.\n"+
+                "However, KAOS also allows the modeler to manually set the transition probabilities.\n"+
+                "In the graphic the arrows represent transitions from the candidate particle to the test particles and the modeler is allowed\n"+
+                "to insert user-defined transition probabilities for each cluster transition.\n"+
+                "Once the model has been fully specified, the solution can be started. KAOS implements a transient analysis and it graphically\n"+
+                "provides the time trend of the expected value of the probability distribution on the clusters from t = 0 to t =Tmax\n"+
+                "with steps equal to DeltaT, as set by the modeler. Moreover, it provides the probability distribution on the clusters at t =Tmax.\n\n";
+                
+                
+	            	/*
+	            	helpK =" Descrizione dei comandi del menu:\n"+
+		  		              " _________________________________________________________________"+"        "+"\n"+		  		              
+		  		              " Open:"+"                "+"open as XML file kaos\n\n"+
+		  		              " Save "+"                   "+"save current Kaos Project as XML file\n"+
+		  		              
+		  		              " Export PNG:"+"                Export graphic as png image'\n\n"+ 
+		  		              " Print:"+"     "+"Print Solution Distribution.\n\n"+
+		  		              " Close:"+"	     	        "+"close current Kaos Project.\n"+
+		  		              " _________________________________________________________________"+"        "+"\n\n\n\n\n\n"+
+		  		              " Sono valide le combinazioni del tasto ' Control ':\n"+
+		  		              " _________________________________________________________________"+"        "+"\n"+
+		  		              " Copia (Ctrl+C) :"+"    "+"copia il testo selezionato\n\n"+
+		  		              " Taglia (Ctrl+X) :"+"    "+"taglia il testo selezionato\n\n"+
+		  		              " Incolla (Ctrl+V) :"+"   "+"incolla il testo copiato o tagliato precedentemente\n"+
+		  		              " _________________________________________________________________"+"        "+"\n\n\n";
+		  		     */         	
+	            	
+	       			 JOptionPane.showMessageDialog(null,helpK,"Help Kaos",JOptionPane.INFORMATION_MESSAGE);	
+	            
+	            }
+              });
+        
+             aboutMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	
+	       			 JOptionPane.showMessageDialog(
+					null,"Kaos Tool is realized by Ing. Giulio De Meo.\nMDSLab University of Messina\nvers. 1.0 - 2015","Information",
+					JOptionPane.INFORMATION_MESSAGE);	
+	            
+	            }
+              });
+        
                  
              initMi.addActionListener(new ActionListener() 
              {
@@ -5646,6 +6067,8 @@ public void consent()
 		       		//	tabProbabMi.setSelected(true);
 		       		//	tabProbabMi.setVisible(true);
 		                okSolution=false;
+		                saveSolMi.setVisible(false);
+    						
 		                cell1On=false;
 		       			cell2On=false;
 		       			iId=-1;
@@ -5854,13 +6277,23 @@ public void consent()
             }
          });
         
+        exportPngMi.setToolTipText("Export graph as png image");
         
         saveMi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) 
             {
+              if (nCluster>0)
+              {
                 //save("prova",graph);
                 // updateVector();
+               
+               //ricarico il vector iniziale in f
+               for (int i=0;i<nCluster;i++)
+               {
+                  f.setElementAt(initF.get(i),i);
+               
+               }
                
                      updateClusters();
                 
@@ -5879,38 +6312,59 @@ public void consent()
                 }
                 catch (Exception ss){}
                 //save_xml("prova2",graph);
+             }
             }
         });
+        
+        saveMi.setToolTipText("Save Model in xml file");
+        saveAsMi.setToolTipText("Save Model in xml file");
+        openMi.setToolTipText("Open xml Model File");
         
         saveAsMi.addActionListener(new ActionListener() 
         {
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-               //updateVector();
-               
-                     updateClusters();
-               
-               
-               String oldName=saveFileAs;
-               saveFileAs = saveAs();
-               //String archi=graph.edgeSet().toString();
-               if (saveFileAs.equals(oldName)==true)
-               {
-                  saveFileAs=saveFileAs.substring(0,saveFileAs.length()-4);
+            	if ((nCluster>0) && (f.size()>0) && (initF.size()>0))
+            	{
+            		System.out.println("salvaaaaaaaa");
+	               //updateVector(); 
+	               
+	               //ricarico il vector iniziale in f
+	               for (int i=0;i<nCluster;i++)
+	               {
+	                  f.setElementAt(initF.get(i),i);
+	               
+	               }
+	               
+	                     updateClusters();
+	               
+	               
+	               String oldName=saveFileAs;
+	               saveFileAs = saveAs();
+	             
+	               if ((saveFileAs.equals("")==false) && (saveFileAs!=null))
+	               {
+	               //String archi=graph.edgeSet().toString();
+	               if (saveFileAs.equals(oldName)==true)
+	               {
+	                  saveFileAs=saveFileAs.substring(0,saveFileAs.length()-4);
+	               }
+	                
+	                
+	                
+	                WriteXMLFile wf=new WriteXMLFile();
+	             try
+	             {   
+	            
+	                wf.writeXML(clust,saveFileAs,modality,distribution, String.valueOf(mu),String.valueOf(eta0),String.valueOf(beta0),String.valueOf(beta));
+	                }
+	                //save_xml("prova2",graph);
+	              
+	               	catch (Exception ss){}
+	               	
+               	  }
                }
-                
-                
-                
-                WriteXMLFile wf=new WriteXMLFile();
-             try
-             {   
-            
-                wf.writeXML(clust,saveFileAs,modality,distribution, String.valueOf(mu),String.valueOf(eta0),String.valueOf(beta0),String.valueOf(beta));
-                }
-                //save_xml("prova2",graph);
-              
-               	catch (Exception ss){}
                
             }
         });
@@ -6271,12 +6725,24 @@ public void consent()
          viewMenu.add(colorMi);
          viewMenu.add(resizeMi);
          viewMenu.add(initMi);
+         
+         
+         helpMenu.add(helpMi);
+         helpMenu.add(aboutMi);
+         
+         solutionMenu.add(startMi);
+          solutionMenu.add(saveSolMi);
+         
 
         menubar.add(fileMenu);
         
        // menubar.add(editMenu);
         
         menubar.add(viewMenu);
+        
+        menubar.add(solutionMenu);
+        
+        menubar.add(helpMenu);
 
         frame.setJMenuBar(menubar);        
         
@@ -6329,24 +6795,24 @@ public void consent()
          final ImageIcon curve= new ImageIcon(img16);
         
         
- 		JButton sel_but = new JButton(sel);      
-    	JButton nodo_but = new JButton(nodo);
-       JButton rect_but = new JButton(rect);
-    	JButton triangle_but = new JButton(triangle);
+ 		sel_but = new JButton(sel);      
+    	nodo_but = new JButton(nodo);
+        rect_but = new JButton(rect);
+    	triangle_but = new JButton(triangle);
         freccia_but = new JButton(freccia);
-        JButton curva_but = new JButton(curva);
-        JButton canc_but = new JButton(canc);
-        JButton select_but = new JButton(select);
-        JButton zoomp_but = new JButton(zoomp);
-        JButton zoomm_but = new JButton(zoomm);        
-        JButton undo_but = new JButton(undo);
-        JButton redo_but = new JButton(redo);
+        curva_but = new JButton(curva);
+        canc_but = new JButton(canc);
+        select_but = new JButton(select);
+        zoomp_but = new JButton(zoomp);
+        zoomm_but = new JButton(zoomm);        
+        undo_but = new JButton(undo);
+        redo_but = new JButton(redo);
         
-        JButton piu_but = new JButton(piu);
-        JButton meno_but = new JButton(meno);
-        JButton go_but = new JButton(go);
-        JButton bar_but = new JButton(bar);
-         JButton curve_but = new JButton(curve);
+        piu_but = new JButton(piu);
+        meno_but = new JButton(meno);
+        go_but = new JButton(go);
+        bar_but = new JButton(bar);
+        curve_but = new JButton(curve);
         
         toolbar1.add(sel_but);        
         toolbar1.add(nodo_but);
@@ -6366,6 +6832,19 @@ public void consent()
          toolbar1.add(go_but);
          toolbar1.add(bar_but);
            toolbar1.add(curve_but);
+           
+           sel_but.setToolTipText("Select clusters");
+           nodo_but.setToolTipText("Edit clusters");
+           zoomp_but.setToolTipText("Zoom +");
+           zoomm_but.setToolTipText("Zoom -");
+           undo_but.setToolTipText("Undo");
+           redo_but.setToolTipText("Redo");
+           piu_but.setToolTipText("Add cluster");
+           meno_but.setToolTipText("Remove cluster");
+           freccia_but.setToolTipText("Show Edges");
+           go_but.setToolTipText("Calculate Solution");
+           bar_but.setToolTipText("View Cluster Probabilities Chartbar");
+           curve_but.setToolTipText("View Expected Values Graph");
         
         sel_but.addActionListener(new ActionListener() 
         {      
@@ -6832,140 +7311,10 @@ public void consent()
         	public void actionPerformed(ActionEvent event) 
             {
             	
-            	if ((modality.equals("")==true) || ((tableData.getValueAt(2, 1).toString()).equals("")==true) )
-            	{
-            		JOptionPane.showMessageDialog 
-            		    (null,"Choose Interaction Mode ","Warning",JOptionPane.WARNING_MESSAGE);
-            	}
-            	else
-            	if ((tableData.getValueAt(3, 1).toString().equals("")==true) &&  (modality.equals("User Defined")==false))
-            	{
-	    	
-		            	  	JOptionPane.showMessageDialog 
-		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
-	            	
-            	}
-            	else
-            	if ((distribution.equals("")==true) &&  (modality.equals("User Defined")==false))
-            	{
-	       	
-		            	  	JOptionPane.showMessageDialog 
-		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
-		         	
-            	}
-            	else
-            	{
-            	//if (sessionOpen==true)
-            	{  
-            	      if (check(f)==true)
-            		     {  
-            		       if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
-		            	   	{
-		            	   	  scrollPaneProbab.setVisible(false);
-		            	   	  panelProp.validate();
-		            	   	  
-		            	   	}
-		            	   	
-		            	    if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
-		            	   	{
-		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))		
-		            	   	  {	
-		            	   	   solutionCC();
-		            	      }
-		            	      else
-		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Uniform")==true))		
-		            	   	  {	
-		            	   	    System.out.println("**********");
-		            	   	   solutionLU(); //soluzione uniforme e lineare
-		            	   	   
-		            	      }
-		            	   	  
-		            	   	}
-		            	   	else
-		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
-		            	   	{
-            		           solution();
-            		        }
-            		        
-            		        titleCentral="Solution";
-    						panelInizD.setBorder(new TitledBorder(titleCentral));
-    						
-    						okSolution=true;
-            		        
-            		       viewTableF(f);
-            		       
-            		       
-            		       if(scrollPaneProbab!=null) 
-            		         {
-            		           scrollPaneProbab.setVisible(true);
-            		         } 
-            		        tabProbabMi.setVisible(true);
-            		        tabProbabMi.setSelected(true);
-            		         panelInizD.validate();
-            		          
-            		     }
-            		     else
-            		     {
-            		     if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
-                        tabProbabMi.setSelected(true);
-            		    JOptionPane.showMessageDialog 
-            		    (null,"The Sum of cluster probabilities is not equal than 1","Warning",JOptionPane.WARNING_MESSAGE);
-            		     
-            		     }
-            		/*
-            		double somma=0;
-            		for (int i=0;i<nCluster;i++)
-  					{
-  	 				 somma=somma+f.get(i);
-  					}
-				  	if (somma!=1)
-				  	{
-				  		
-			
-            		  	if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
-                        tabProbabMi.setSelected(true);
-            		    JOptionPane.showMessageDialog (null,"Error: the sum of cluster probabilities is different from 1","Warning",JOptionPane.WARNING_MESSAGE);
-            		  }
-            		  else          	
-	            	{
-		               
-		               solution();
-		            }
-                   */
-	            
-            	}
-            	
-            	
-            	
-            	sel_but.setSelected(false);
-        	   nodo_but.setSelected(false);
-               rect_but.setSelected(false);
-               triangle_but.setSelected(false);
-               go_but.setSelected(true);
-               piu_but.setSelected(false);
-              meno_but.setSelected(false);
-               canc_but.setSelected(false);
-               nodo_but.setBackground(null);
-               triangle_but.setBackground(null);
-               rect_but.setBackground(null);
-               freccia_but.setBackground(null);
-               canc_but.setBackground(null);  
-                curva_but.setSelected(false);
-               curva_but.setBackground(null); 
-               sel_but.setBackground(null); 
-              // go_but.setBackground(Color.BLUE); 
-               
-          }     
-          
-          System.out.println("Beta "+beta+ "Beta0 "+beta0+" lung "+initF.size());
-           System.out.println("Vettore Iniziale:");
-          for (int i=0;i<initF.size();i++)
-		  	{
-		  	  
-		  	  System.out.println("initF "+initF.get(i));
-		  	}
+            start();
+            saveSolMi.setVisible(true);
 
-        }
+             }
 
         });
         
@@ -7042,7 +7391,7 @@ public void consent()
             	
             	if ((enneLeng>0) && (nCluster>0))
             	{  
-            	   Vector <Double> enneV=new Vector<Double>();
+            	   enneV=new Vector<Double>();
             	  int i=0; int delta=(int)(nt/tmax);
                 do
                {
@@ -7694,7 +8043,7 @@ public void consent()
         
         public void updateClusters()        
         {
-       	     Vector <String> labels= new Vector<String>();
+       	     labels= new Vector<String>();
        	     clust=new Vector<Cluster>();
        	             
        	              for (Object vertex : g.getChildCells(g.getDefaultParent(), true, true)) 
@@ -7750,7 +8099,7 @@ public void consent()
 			  return filename;
 	    }
         
-         public String saveAs()
+        public String saveAs()
 	    {
 	    	  String filename=new String("");
 	    	  String newnome=new String("");
@@ -8089,5 +8438,115 @@ class ColorTableCellRenderer extends JPanel implements TableCellRenderer
       else setBorder(null);
       return this;
    }
+}
+
+class OptionPan extends JFrame 
+{  
+	JFrame frameOp;
+	public final Color color=Color.WHITE;
+	JCheckBox ch1,ch2;  
+	JButton b;  
+	public int opt;
+	
+	public void openPan()
+	{  
+		   frameOp=new JFrame(); 
+		   opt=0;
+		ch1=new JCheckBox ("Cluster Probabilities");  
+		ch1.setBounds(65,50,200,30);  
+		  
+		ch2=new JCheckBox ("Expected Values");  
+		ch2.setBounds(65,100,200,30);  
+		  JPanel panel = new JPanel(new GridLayout(3, 2));
+		  
+		  //frame.setLayout(null);  
+		//frame.setVisible(true);  
+		frameOp.setBackground(color);
+		panel.setBackground(color);
+		ch1.setBackground(color);
+		ch2.setBackground(color);
+		ch1.setForeground(Color.blue);
+		ch2.setForeground(Color.blue);
+		
+		/*
+		ButtonGroup bg=new ButtonGroup();  
+		bg.add(rb1);bg.add(rb2);  
+		*/
+		
+		b=new JButton("Save");  
+		b.setBounds(100,150,80,30);  
+	
+		  b.setForeground(Color.red);
+		frameOp.add(ch1);
+		frameOp.add(ch2);
+		frameOp.add(b);  
+		  
+		frameOp.setSize(300,300); 
+		
+		frameOp.setTitle("Save Solution");
+		
+		Border border = BorderFactory.createTitledBorder(null,"Choose Solution",0,0,null,Color.blue);
+		
+		panel.setBorder(border);
+		
+		frameOp.add(panel);
+		frameOp.setVisible(true);
+		
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		
+		Container contentPane = frameOp.getContentPane();
+		    contentPane.add(panel);
+
+	Demo dem=new Demo();
+	
+	b.addActionListener(new ActionListener() 
+    {
+	            @Override
+	           
+		public void actionPerformed(ActionEvent e)
+		{  
+			
+			
+			if ((ch1.isSelected()==false) && ((ch2.isSelected()==false)))
+			{
+				 
+			      opt=0;
+			
+			  
+			}
+			if ((ch1.isSelected()==true) && ((ch2.isSelected()==false)))
+			{  
+			 
+			  opt=1;
+		      dem.saveProbTxt();
+			  
+			 
+			}  
+			else
+			if ((ch1.isSelected()==false) && ((ch2.isSelected()==true)))
+			{
+				 
+			  opt=2;
+			   dem.saveExpecTxt();
+			  
+			}
+			else
+			if ((ch1.isSelected()==true) && ((ch2.isSelected()==true)))
+			{
+				 
+			  opt=3;
+			  //salva in 2 file txt  separati valore atteso e probabilita
+			  dem.saveEFTxt();
+			  
+			}
+			  
+			  frameOp.setVisible(false); 
+		}
+	} ); 
+	
+
+  }
 }
 
