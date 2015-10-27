@@ -1,6 +1,6 @@
 /**
  	* Modeling altruism and selfishness in welfare dynamics: The role of nonlinear interactions
- 	* Kinetic Theory for Active Particles (KAOS)
+ 	* Kinetic theory with Applications On Social systems (KAOS)
  	* @author Ing. Giulio De Meo 
 **/
 
@@ -140,12 +140,14 @@ public class Demo
 	public static double tmax; //tempo massimo integrazione Tmax= 200
 	public static int nt; //numero di time steps Nt = 100000
 	public static double deltat; //rapporto tra Tmax ed Nt
+	public static double sommaF;//sommma del vettore f iniziale
 	
 	public static double B[][][];
 	public static double eta[][];
 	public static double enne[];
 	public static double emme[];
 	public static double df[];
+	
 	
 	public static int opt;
 	
@@ -431,7 +433,7 @@ public class Demo
             		     if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
                         tabProbabMi.setSelected(true);
             		    JOptionPane.showMessageDialog 
-            		    (null,"The Sum of cluster probabilities is not equal than 1","Warning",JOptionPane.WARNING_MESSAGE);
+            		    (null,"The Sum of cluster probabilities is "+sommaF+"\nIt must be equal than 1","Warning",JOptionPane.WARNING_MESSAGE);
             		     
             		     }
             		/*
@@ -694,6 +696,156 @@ public class Demo
       
       
     }//end dispayGauss
+    
+    
+    
+        /** Open Menu windows to set parameter linear, non linear in First Neighbor table of games
+   	 **/  
+     public static void displayFN() 
+    {
+    	boolean end=false;
+    	
+    	 String[] items = {"Linear", "Non Linear"};
+        JComboBox combo = new JComboBox(items);	
+       
+    	
+      while( end==false)
+      {	
+    	
+        String precValue=String.valueOf(beta0);
+        JTextField textBeta0 = new JTextField(precValue);
+        
+       
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+      
+        panel.add(combo);
+        panel.add(new JLabel("Neighbor Probability (Beta0)"));
+        panel.add(textBeta0);
+     
+     
+               int result = JOptionPane.showConfirmDialog(null, panel, modality,
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        
+        if (result == JOptionPane.OK_OPTION) 
+        {
+            System.out.println(combo.getSelectedItem()
+                + " " + textBeta0.getText());
+                
+            try
+         	{
+             	
+         	  if ((textBeta0.getText()!=null) && (textBeta0.getText().equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(textBeta0.getText());     
+	             if ((valore<0) || (valore>1))
+	             { 
+	               
+	               
+	               JOptionPane.showMessageDialog
+	            (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+	               
+	               
+	              textBeta0.setText(precValue);
+	               end=false;
+	             }
+	             else
+	             {
+	             	beta0=valore; 
+	             	System.out.println(beta0);
+	             	end=true;
+	             }
+	            
+              }
+              else
+              {
+                textBeta0.setText("0");
+               beta0=0;
+                end=true;
+              }
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+	             textBeta0.setText(precValue);  
+	             
+	             end=false;
+            }  
+                
+                
+                
+        } 
+        else 
+        {
+            System.out.println("Cancelled");
+            end=true;
+        }
+        System.out.println(beta0);
+        
+      }
+      
+      if (combo.getSelectedItem().equals("Non Linear")==true) //caso non lineare, inserire il parametro Beta
+      {
+      	
+      	boolean endBeta=false;
+      	String sBeta="";
+      	while (endBeta==false)
+      	{
+      	  sBeta=JOptionPane.showInputDialog("Insert the Non Linearity Factor (Beta) ");
+      	  
+      	    try
+         	{
+             	
+         	  if ((sBeta!=null) && (sBeta.equals("")==false))
+         	  {	
+          	     double valore=Double.parseDouble(sBeta);     
+	             if ((valore<0) || (valore>1))
+	             { 
+	               
+	               JOptionPane.showMessageDialog
+	                  (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+	              
+	               endBeta=false;
+	             }
+	             else
+	             {
+	             	beta=valore; 
+	             	System.out.println("beta: "+beta);
+	             	endBeta=true;
+	             }
+	            System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+              }
+              else
+              {
+                
+                beta=0.0;	System.out.println("beta: "+beta);
+                endBeta=true;
+              }
+              System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+            }   
+              
+            catch (NumberFormatException  ex)
+            {
+            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+	              
+	             
+	             endBeta=false;
+            } 
+      	  
+      	}
+      	
+      	
+      	
+      }//end Non Linear Mode
+      else
+      {
+      	beta=0.0;
+      }
+      
+      
+    }//end dispayFN
+    
+    
    
     /** Open Menu windows to set parameter mu, linear, non linear in Coop/Competition mode
    	 **/  
@@ -701,8 +853,7 @@ public class Demo
     {
     	boolean end=false;
     	
-    	 String[] items = {"Linear", "Non Linear"};
-        JComboBox combo = new JComboBox(items);	
+    	
        
     	
       while( end==false)
@@ -714,7 +865,7 @@ public class Demo
        
         JPanel panel = new JPanel(new GridLayout(0, 1));
       
-        panel.add(combo);
+       
         panel.add(new JLabel("Distance:"));
         panel.add(  distanceMu);
      
@@ -724,8 +875,7 @@ public class Demo
         
         if (result == JOptionPane.OK_OPTION) 
         {
-            System.out.println(combo.getSelectedItem()
-                + " " + distanceMu.getText());
+            System.out.println(distanceMu.getText());
                 
             try
          	{
@@ -779,65 +929,6 @@ public class Demo
         System.out.println(mu);
         
       }
-      
-      if (combo.getSelectedItem().equals("Non Linear")==true) //caso non lineare, inserire il parametro Beta
-      {
-      	
-      	boolean endBeta=false;
-      	String sBeta="";
-      	while (endBeta==false)
-      	{
-      	  sBeta=JOptionPane.showInputDialog("Insert the Non Linearity Factor Beta:) ");
-      	  
-      	    try
-         	{
-             	
-         	  if ((sBeta!=null) && (sBeta.equals("")==false))
-         	  {	
-          	     double valore=Double.parseDouble(sBeta);     
-	             if ((valore<0) || (valore>1))
-	             { 
-	               
-	               JOptionPane.showMessageDialog
-	                  (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
-	              
-	               endBeta=false;
-	             }
-	             else
-	             {
-	             	beta=valore; 
-	             	System.out.println("beta: "+beta);
-	             	endBeta=true;
-	             }
-	            System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-              }
-              else
-              {
-                
-                beta=0.0;	System.out.println("beta: "+beta);
-                endBeta=true;
-              }
-              System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-            }   
-              
-            catch (NumberFormatException  ex)
-            {
-            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
-	              
-	             
-	             endBeta=false;
-            } 
-      	  
-      	}
-      	
-      	
-      	
-      }//end Non Linear Mode
-      else
-      {
-      	beta=0.0;
-      }
-      
       
     }//end dispayCC
    
@@ -1498,11 +1589,11 @@ public void unif2B(int iId, int hId)
            String text=new String();
            if (beta==0)
            {
-             text="First Neighboor Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
+             text="First Neighbor Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
            }
            else
            {
-             text="First Neighboor Non Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
+             text="First Neighbor Non Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
            }
            String[] s= new String [nCluster];
       ChartBar cb=new ChartBar(ff, s, text);
@@ -3146,17 +3237,17 @@ public void consent()
  public boolean check (Vector<Double> v)
   {
   	boolean ok=true;
-  	double somma=0;
+  	sommaF=0.0;
   	for (int i=0;i<v.size();i++)
   	{
-  	  somma=somma+(double) v.get(i);
+  	  sommaF=sommaF+(double) v.get(i);
   	}
-  	somma=round(somma,8);
-  	if (somma!=1)
+  	//somma=round(somma,8);
+  	if (Math.abs(1.0-sommaF)>0.001)
   	{
   		ok=false;
   	}
-  	 		System.out.println("Somma f: "+somma);
+  	 		System.out.println("Somma f: "+sommaF);
      return ok;
   }
  
@@ -3983,6 +4074,8 @@ public void consent()
 			 	    System.out.println("Primo vicino");
 			 	    boolean endBeta0=false;
 			      	String sBeta0="";
+			      	displayFN();
+			      	/*
 			      	while (endBeta0==false)
 			      	{
 			      	  sBeta0=JOptionPane.showInputDialog("Insert the First Neighbor Probability Beta0:  ");
@@ -4027,9 +4120,11 @@ public void consent()
 			      	  
 			      	}
 			 	    
-			 	    
+			 	 */   
 				} //end 1 near
+				
 				else
+				
 				if (selected.equals("Uniform"))
 				{
 				  
@@ -5720,7 +5815,7 @@ public void consent()
        // mxGraphComponent component = new mxGraphComponent(g);
        component = new mxGraphComponent(g);
        //component.zoom(1.5); //effettua lo zoom del grafico
-        frame = new JFrame("KaoS");
+        frame = new JFrame("KAOS");
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         /*
