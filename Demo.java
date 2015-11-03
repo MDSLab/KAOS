@@ -9,6 +9,10 @@ import Kaos.WriteXMLFile;
 import Kaos.ReadXMLFile;
 import Kaos.ChartBar;
 import Kaos.GraphCurve;
+
+import org.nfunk.jep.*;
+import org.nfunk.jep.kaos.*;
+
 import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import java.awt.BorderLayout;
@@ -151,7 +155,7 @@ public class Demo
 	
 	public static int opt;
 	
-    public static JButton go_but,freccia_but, select_but, redo_but, undo_but, bar_but, sel_but,nodo_but,rect_but, curva_but, triangle_but, curve_but, piu_but, meno_but, canc_but, zoomp_but, zoomm_but;
+    public static JButton fx_but, go_but,freccia_but, select_but, redo_but, undo_but, bar_but, sel_but,nodo_but,rect_but, curva_but, triangle_but, curve_but, piu_but, meno_but, canc_but, zoomp_but, zoomm_but;
 	
 	
 	public static boolean sessionOpen; // se true indica che la sessione e aperta, hId e iId assegnati
@@ -200,7 +204,126 @@ public class Demo
    public static String titleCentral=new String(); //title of central Panel
    public static boolean okSolution; // it's true if solution has been calculated
    public    JMenuItem saveSolMi;
+   public static String funct=new String();//parsed input function used to calculate B Matrix    
    
+    /** Parse  the Function typed
+      * @param fx - String function to be parsed
+      * @return double function value 
+   	**/ 
+   	public static double function(String fx) 
+	{
+		JEP myParser = new JEP();
+		/*
+		double x,y;
+		x=myParser.addVariable("x",2.0);
+		y=myParser.addVariable("y",3.5);
+		myParser.addStandardFunctions();
+	    //myParser.addFunction("half", new Half());
+		//myParser.parseExpression("half(x)");
+		
+		myParser.addFunction("cube", new Cube());
+		myParser.parseExpression("cube(x)");
+		
+		System.out.println("cube(x) = " + myParser.getValue());
+		double somma=0;
+		*/
+		
+		
+		Vector <Double> xi=new Vector<Double>();
+	    Vector <Double> yi=new Vector<Double>();
+		double j=0.0;
+		for (int i=0;i<nCluster;i++)
+		{
+			j=(double) i;
+		  xi.add(j); 
+		  yi.add(f.get(i));
+		}
+		
+		myParser.addStandardFunctions();
+			myParser.addFunction("E1", new Moment());
+			myParser.addFunction("E2", new Moment2());
+			myParser.addFunction("E3", new Skewness());
+			myParser.addFunction("sumVect", new SumVect());
+			myParser.addFunction("cube", new Cube());
+			myParser.addFunction("Gap", new Gap());
+			myParser.addVariableAsObject("u",xi);
+			myParser.addVariableAsObject("v",yi);
+		//myParser.parseExpression("E1(x,y)");
+		
+		    //constants assignment
+		    myParser.addVariable("mu",mu);
+		    myParser.addVariable("eta0",eta0);
+		    myParser.addVariable("beta",beta);
+		    myParser.addVariable("beta0",beta0);
+		    myParser.addVariable("Nt",nt);
+		    myParser.addVariable("Tmax",tmax);
+		    myParser.addVariable("Deltat",deltat);		    
+			myParser.addVariable("e",Math.exp(1));
+			//String s=JOptionPane.showInputDialog("Insert Function: ");
+		myParser.parseExpression(fx);
+	    //JOptionPane.showMessageDialog(null,fx+" = "+myParser.getValue(),"Output",JOptionPane.INFORMATION_MESSAGE);
+	    double result=myParser.getValue();
+	    return result;
+	}
+	
+	/** Open  JPG image from the specified file
+	  * @param filename - a String specifying a filename or path
+   	**/  
+	public void openJPG(String filename) 
+	{
+	  try
+	  {            
+	    URL url = getClass().getResource(filename );	        
+	    JFrame f = new JFrame();
+	     //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	     f.setTitle("Help Kaos Functions");
+	     ImageIcon image = new ImageIcon(url); // pass the file location of an image
+	     JLabel label = new JLabel(image);
+	     JScrollPane scrollPane = new JScrollPane(label);
+	     scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	     scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	     f.add(scrollPane, BorderLayout.CENTER);
+	     f.pack();
+	     f.setVisible(true);    
+      }
+      catch(Exception ee) 
+      {
+      	 System.out.println(filename+"  non trovata");
+      }
+	}
+	
+    /** Open  PDF file  from the specified file
+	  * @param filename - a String specifying a filename or path
+   	**/  
+    public void openPDF(String filename)
+    {
+      try 
+      {
+        //filename functions.pdf
+        
+        URL monUrl  = this.getClass().getResource(filename);
+            File pdfFile = new File(monUrl.toURI());
+        
+		//File pdfFile = new File(filename);
+		if (pdfFile.exists()) {
+
+			if (Desktop.isDesktopSupported()) {
+				Desktop.getDesktop().open(pdfFile);
+			} else {
+				System.out.println("Awt Desktop is not supported!");
+			}
+
+		} else {
+			System.out.println(filename+" File is not exists!");
+		}
+
+		System.out.println(filename+"Done");
+
+	  } catch (Exception ex) {
+		ex.printStackTrace();
+	  }
+    }
+       
    /** Create text file of Cluster Probabilities (Solution) to be saved 
    **/
    public void saveProbTxt()
@@ -495,7 +618,7 @@ public class Demo
    
    /** Print the 3D Matrix
    	* @param n number of clusters of the model
-    * @param  double A[][][]  3D Matrix to be printed
+    * @param A[][][]  double 3D Matrix to be printed
     **/ 
    public void  printB (double[][][]  A,int n)
    {
@@ -933,8 +1056,8 @@ public class Demo
     }//end dispayCC
    
    /** Set all elements of  Eta Matrix to value
-   	*  @param nC number of clusters
-   	* @param value Value to set all elements of Eta Matrix
+   	*  @param nC - int number of clusters
+   	* @param value - double Value to set all elements of Eta Matrix
     **/  
    public void setEta(int nC,double value)
    {
@@ -947,8 +1070,8 @@ public class Demo
    
    /** Set 2D Matrix B in the cooperation/competition in Uniform Distribution interaction mode 
     *  dependent from Test & Candidate Selected
-   	*  @param iId Test cluster
-   	*  @param hId Candidate clusters
+   	*  @param iId - Test cluster
+   	*  @param hId - Candidate clusters
     **/
 
 public void unif2B(int iId, int hId)
@@ -1129,103 +1252,7 @@ public void unif2B(int iId, int hId)
    
    }//end calculateBLU
    
-      /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
-   	* @param tempo index of timestep
-    **/  
-     //matrice di matlab
-   public void calculateBLU_(int tempo)
-   {
-   	
-   	  int n=Math.round((nCluster-1)/2); 
-   	double a=1.0;
-   	double c=0.0;
-   	
-   			//resetB(nCluster);
-		for(int i=0; i<nCluster; i++) 
-		{
-		for(int h=0; h<nCluster; h++) 
-		{
-		for(int k=0; k<nCluster; k++) 
-		{
-			B[i][h][k] = 0; 
-	
-		}
-	    }
-    	}
-		
-		
-		//1 indice di matrice = 
-		
-		for(int k=0; k<nCluster; k++) //2 indice di riga
-		{
-		  for(int h=0; h<nCluster; h++) //3 indice colonna
-		  {
-	    
-		   
-		
-			//scelta tra competizione e cooperazione
-			
-			if (Math.abs(k-h)<mu) //competizione
-			{
-			     
-			     if (h<k)
-			     {
-			     	for (int i=0;i<h;i++)
-			     	
-			     	{
-			     		c=a/(h+1);
-			          B[i][h][k] = c;
-			        } 
-			     }
-			     
-			     if  (h>k)  
-			     {
-			     	for (int i=h;i<nCluster;i++)
-			     	{
-			     		c=a/(nCluster-h);
-			          B[i][h][k] = c;
-			          
-			        } 
-			     }
-			     
-			     B[h][h][h]=a;
-			 
-			}
-			
-			//coperazione
-			if (Math.abs(k-h)>=mu) //competizione
-			{
-				 if (h<k)
-			     {
-			     	for (int i=h;i<k;i++)
-			     	{
-			     		c=a/(k-h+1);
-			          B[i][h][k] = c;
-			        } 
-			     }
-				
-				if (h>k)
-			     {
-			     	for (int i=k;i<h;i++)
-			     	{
-			     		c=a/(h-k+1);
-			          B[i][h][k] = c;
-			        } 
-			     }
-				
-				
-		    }
-		 
-		
-		
-		}
-	
-     }
-	
-	//printB(B,nCluster);
-		
-   
-   }//end calculateBLU_old 
+
    
    
    /** Calculate the B Matrix complete to Coop/Comp  Non Linear First Neighbor
@@ -1236,7 +1263,7 @@ public void unif2B(int iId, int hId)
    	  
    	  int n=Math.round((nCluster-1)/2); 
    	
-   	
+   	double functions= function(funct);
    			//resetB(nCluster);
 		for(int i=0; i<nCluster; i++) 
 		for(int h=0; h<nCluster; h++) 
@@ -1293,13 +1320,13 @@ public void unif2B(int iId, int hId)
 			     //triangolare superiore
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h) )
 			     {
-			        B[i][h][k] =1.0 - ( beta0 + beta * enneF(nCluster) );
-			       // B[i][h][k]= 1 - ( beta0 );
+			        B[i][h][k] =1.0 - functions;//( beta0 + beta * enneF(nCluster) );
+			       
 			     }
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h+1) )
 			     {
-			        B[i][h][k] =( beta0 + beta * enneF(nCluster) );
-			       //B[i][h][k] = ( beta0 );
+			        B[i][h][k] =functions;//( beta0 + beta * enneF(nCluster) );
+			       
 			     }
 			 
 			 
@@ -1310,15 +1337,15 @@ public void unif2B(int iId, int hId)
 				//System.out.println(i+" "+h+" "+k);
 			     if ( (h<k) && (i==h+1) )
 			     {
-			        B[i][h][k] =( beta0 + beta * enneF(nCluster)  );
-			        //B[i][h][k] =( beta0 );//+ beta * enneF(nCluster)  );
+			        B[i][h][k] =functions;//( beta0 + beta * enneF(nCluster)  );
+			        
 			        
 			     }
 			     
 			     if (  (h<k) &&  (i==h) )
 			     {
-			        B[i][h][k] = 1.0 - ( beta0 + beta * enneF(nCluster)  );
-			        //B[i][h][k] = 1 - ( beta0 );//+ beta * enneF(nCluster)  );
+			        B[i][h][k] = 1.0 - functions;//( beta0 + beta * enneF(nCluster)  );
+			        
 			     }
 			     //triangolare inferiore
 			     if (  (h>k)  && (i==h) )
@@ -1329,7 +1356,7 @@ public void unif2B(int iId, int hId)
 			     if ((h>k)  && (i==h-1))
 			     {
 			        B[i][h][k] = beta0; 
-			        //System.out.println("entraaaaaaaaaaaaaaaa");
+			        
 			     }
 		    }
 		 }
@@ -5598,7 +5625,8 @@ public void consent()
     public void go()  
     {  
     	
-  
+      funct=new String();
+      funct="beta0+beta*Gap(v)";
       okSolution=false;
       						
     
@@ -5974,6 +6002,9 @@ public void consent()
      final    JMenuItem newMi = new JMenuItem(new MenuItemAction("Close", iconNew, 
                 KeyEvent.VK_N));
                 
+      final    JMenuItem pdfFuncMi = new JMenuItem(new MenuItemAction("Help Functions", null, 
+                KeyEvent.VK_N));
+                
       final    JMenuItem helpMi = new JMenuItem(new MenuItemAction("Help Kaos", null, 
                 KeyEvent.VK_N));
                 
@@ -6072,6 +6103,18 @@ public void consent()
 	                //frame.setVisible(false); go();
 	            }
         });
+        
+        pdfFuncMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	
+	       			//	openPDF("Kaos/functions.pdf");
+	       				openJPG("Kaos/functions.jpg");
+	            
+	            }
+              });
         
         helpMi.addActionListener(new ActionListener() 
              {
@@ -6472,6 +6515,7 @@ public void consent()
             @Override
             public void actionPerformed(ActionEvent event) 
             {   
+            
              
              System.out.println(rowCol+"  Colori: "+kCol+"  "+hCol+" "+iCol);
             
@@ -6821,7 +6865,7 @@ public void consent()
          viewMenu.add(resizeMi);
          viewMenu.add(initMi);
          
-         
+         helpMenu.add(pdfFuncMi);
          helpMenu.add(helpMi);
          helpMenu.add(aboutMi);
          
@@ -6888,6 +6932,8 @@ public void consent()
          final ImageIcon bar= new ImageIcon(img15);
          URL img16 = getClass().getResource("icons/curve.png");
          final ImageIcon curve= new ImageIcon(img16);
+         URL img17 = getClass().getResource("icons/fx.png");
+         final ImageIcon fxx= new ImageIcon(img17);
         
         
  		sel_but = new JButton(sel);      
@@ -6908,7 +6954,7 @@ public void consent()
         go_but = new JButton(go);
         bar_but = new JButton(bar);
         curve_but = new JButton(curve);
-        
+        fx_but=new JButton(fxx);
         toolbar1.add(sel_but);        
         toolbar1.add(nodo_but);
         //toolbar1.add(rect_but);
@@ -6927,6 +6973,7 @@ public void consent()
          toolbar1.add(go_but);
          toolbar1.add(bar_but);
            toolbar1.add(curve_but);
+           toolbar1.add(fx_but);
            
            sel_but.setToolTipText("Select clusters");
            nodo_but.setToolTipText("Edit clusters");
@@ -6940,6 +6987,7 @@ public void consent()
            go_but.setToolTipText("Calculate Solution");
            bar_but.setToolTipText("View Cluster Probabilities Chartbar");
            curve_but.setToolTipText("View Expected Values Graph");
+           fx_but.setToolTipText("Insert Function");
         
         sel_but.addActionListener(new ActionListener() 
         {      
@@ -7408,6 +7456,19 @@ public void consent()
             	
             start();
             saveSolMi.setVisible(true);
+
+             }
+
+        });
+        
+        //premuto per inserire una nuova funzione non lineare
+        fx_but.addActionListener(new ActionListener() 
+        {
+        	public void actionPerformed(ActionEvent event) 
+            {
+            	funct="";
+             funct=JOptionPane.showInputDialog("Insert Function: ");
+             System.out.println("function result: "+function(funct));             
 
              }
 
