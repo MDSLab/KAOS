@@ -1,5 +1,4 @@
 /**
- 	* Modeling altruism and selfishness in welfare dynamics: The role of nonlinear interactions
  	* Kinetic theory with Applications On Social systems (KAOS)
  	* @author Ing. Giulio De Meo 
 **/
@@ -9,10 +8,8 @@ import Kaos.WriteXMLFile;
 import Kaos.ReadXMLFile;
 import Kaos.ChartBar;
 import Kaos.GraphCurve;
-
 import org.nfunk.jep.*;
 import org.nfunk.jep.kaos.*;
-
 import javax.swing.border.Border;
 import javax.swing.BorderFactory;
 import java.awt.BorderLayout;
@@ -135,9 +132,9 @@ public class Demo
 		public static JPanel panelInizD;	
 	JCheckBoxMenuItem resizeMi;
 	JCheckBoxMenuItem tabProbabMi,tabVarMi,tabPropMi,colorMi,edgeLabelMi;	
-	public String mode;//cooperation/competition, consent/dissent o User Defined		
+	public String mode;//cooperation/competition, consensus/dissent o User Defined		
 	public static int screenX,screenY; //risoluzione schermo		
-	public static int mu; // mu=7
+	public static double mu; // mu=7
 	public static double eta0; //eta0= 0.6
 	public static double beta0; //beta0= 0.6
 	public static double beta; //beta0= 0.4
@@ -150,13 +147,18 @@ public class Demo
 	public static double eta[][];
 	public static double enne[];
 	public static double emme[];
+	public static double emme2[];
+	public static double emme3[];
 	public static double df[];
 	
+	public static JToolBar toolbar1;
 	
 	public static int opt;
+	public int optionGraph;
 	
     public static JButton fx_but, go_but,freccia_but, select_but, redo_but, undo_but, bar_but, sel_but,nodo_but,rect_but, curva_but, triangle_but, curve_but, piu_but, meno_but, canc_but, zoomp_but, zoomm_but;
 	
+	 public static JButton progress;
 	
 	public static boolean sessionOpen; // se true indica che la sessione e aperta, hId e iId assegnati
 	public boolean tabVarOpen; 
@@ -170,10 +172,11 @@ public class Demo
    public static int r,x0,y0,iId,hId;
    public static int diametro; //dimensione del diametro del cluster
    public static boolean cell1On,cell2On;
-
    public static Vector<MyEdge> edges = new Vector<MyEdge>();
    public  static Vector<Double> f = new Vector<Double>();
    public static Vector <Double> enneV=new Vector<Double>();
+      public static Vector <Double> enne2V=new Vector<Double>();
+         public static Vector <Double> enne3V=new Vector<Double>();
    public  static Vector<Double> initF = new Vector<Double>();//vector contenente i valori iniziali di probabilita dei Cluster
    public static Vector<Cluster> clust=new Vector<Cluster>(); //vector contenente i clusters da inviare al file XML
    public static Vector<String> param=new Vector<String>(); 
@@ -198,13 +201,156 @@ public class Demo
   public static String hCol,kCol,iCol;
      
    public static int rowCol;
-   public static String modality; //modality cooperation/competiton or consent/dissent or user defined
+   public static String modality; //modality cooperation/competiton or consensus/dissent or user defined
       public static String distribution; // first neighbor, uniform,  gaussian;
    public static double average,deviation; //variables in Gaussian Distribution
    public static String titleCentral=new String(); //title of central Panel
    public static boolean okSolution; // it's true if solution has been calculated
    public    JMenuItem saveSolMi;
    public static String funct=new String();//parsed input function used to calculate B Matrix    
+   
+   
+    /** Calcutate the probability density f(x,mu,sigma) of the Normal (Gaussian) Distribution 
+      * @param x - indipendent variable
+      * @param m - expected value mu (expectation)
+      * @param s - standard deviation (sigma)
+      * @return value - Gaussian probability density f(x,mu,sigma)
+   	**/ 
+   public double gaussValue(int x, double m, double s) 
+   {
+     double z=-((x-m)*(x-m))/(2*s*s);
+     double value = (1.0/(s*Math.sqrt(2*Math.PI)))*Math.pow(Math.E,z);
+     return value;  
+   }
+   
+   /*
+    * Draw Graph of First Order Moment
+   */
+   public void draw1OM()
+   {
+   	           int delta=(int)(nt/tmax);
+                int i=0;
+              	GraphCurve gc;
+                enneV=new Vector<Double>();
+            	do
+	               {
+	                   enneV.add(emme[i]);
+	                  i=i+delta;
+	               }
+	               while(i<nt);
+           	       String text="Expected Value";
+           			
+      				gc=new GraphCurve(enneV);
+      			 	gc.drawCurve(enneV,text);
+    }
+    
+    /*
+    * Draw Graph of Second Order Moment
+   */
+   public void draw2OM()
+   {
+   	           int delta=(int)(nt/tmax);
+                int i=0;
+              	GraphCurve gc2;
+                enne2V=new Vector<Double>();
+            	do
+	               {
+	                   enne2V.add(emme2[i]);
+	                  i=i+delta;
+	               }
+	               while(i<nt);
+           	       String text="Second Order Moment";
+           			
+      				gc2=new GraphCurve(enne2V);
+      			 	gc2.drawCurve(enne2V,text);
+    }
+    /*
+    * Draw Graph of Second Order Moment or Skewness
+   */
+   public void draw3OM()
+   {
+   	           int delta=(int)(nt/tmax);
+                int i=0;
+              	GraphCurve gc3;
+                enne3V=new Vector<Double>();
+            	do
+	               {
+	                   enne3V.add(emme3[i]);
+	                  i=i+delta;
+	               }
+	               while(i<nt);
+           	       String text="Skewness";
+           			
+      				gc3=new GraphCurve(enne3V);
+      			 	gc3.drawCurve(enne3V,text);
+    }
+   
+   
+   /** Save Project in a XML file
+   	**/ 
+   	public void saveXmlFile()
+   {
+   	          if (nCluster>0)
+              {
+                //save("prova",graph);
+                // updateVector();
+               
+               //ricarico il vector iniziale in f
+               for (int i=0;i<nCluster;i++)
+               {
+                  f.setElementAt(initF.get(i),i);
+               
+               }
+               
+                     updateClusters();
+                
+                WriteXMLFile wf=new WriteXMLFile();
+                if (saveFileAs.length()==0) 
+                {
+                	saveFileAs=saveAs();
+                }
+                else
+                {
+                	saveFileAs=saveFileAs.substring(0,saveFileAs.length()-4);
+                }
+                try
+                {
+                wf.writeXML(clust,saveFileAs,modality,distribution, String.valueOf(mu),String.valueOf(eta0),String.valueOf(beta0),String.valueOf(beta));
+                }
+                catch (Exception ss){}
+                //save_xml("prova2",graph);
+             }
+   
+   
+   }
+   
+   
+   /** Parse  the Function typed
+      * @param filename - String name of chm help file you would like to open
+   	**/ 
+   public void openChmFile(String filename) 
+   {
+   		   
+	  // URL helpUrl = getClass().getResource("/Kaos/+"filename);
+	  
+	
+        try 
+        {
+        	 
+	  URL helpUrl = new URL("http://xoomer.virgilio.it/giuliodemeo/kaos.htm");
+   
+      Desktop.getDesktop().browse(helpUrl.toURI());
+        } 
+        catch (IOException ex) 
+        {
+            ex.printStackTrace();
+        } catch (Exception ex) 
+        {
+           ex.printStackTrace();
+        }
+
+   }
+   
    
     /** Parse  the Function typed
       * @param fx - String function to be parsed
@@ -246,8 +392,8 @@ public class Demo
 			myParser.addFunction("sumVect", new SumVect());
 			myParser.addFunction("cube", new Cube());
 			myParser.addFunction("Gap", new Gap());
-			myParser.addVariableAsObject("u",xi);
-			myParser.addVariableAsObject("v",yi);
+			myParser.addVariableAsObject("U",xi);
+			myParser.addVariableAsObject("V",yi);
 		//myParser.parseExpression("E1(x,y)");
 		
 		    //constants assignment
@@ -502,26 +648,31 @@ public class Demo
             	{
             	//if (sessionOpen==true)
             	{  
-            	      if (check(f)==true)
-            		     {  
-            		       if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
+            	         if (check(f)==true)
+            		     { 
+            		       
+            		       
+            		        if ((scrollPaneProbab.isVisible()==true) && (scrollPaneProbab!=null))
 		            	   	{
 		            	   	  scrollPaneProbab.setVisible(false);
 		            	   	  panelProp.validate();
 		            	   	  
 		            	   	}
 		            	   	
+		            	   	solution();
+		            	   	
+		            	   	/*
 		            	    if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
 		            	   	{
 		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))		
 		            	   	  {	
-		            	   	   solutionCC();
+		            	   	   solutionCC(); //calculateB(tempo);
 		            	      }
 		            	      else
 		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Uniform")==true))		
 		            	   	  {	
 		            	   	    System.out.println("**********");
-		            	   	   solutionLU(); //soluzione uniforme e lineare
+		            	   	   solutionLU();     //  calculateBLU(0);     soluzione uniforme e lineare
 		            	   	   
 		            	      }
 		            	   	  
@@ -529,13 +680,17 @@ public class Demo
 		            	   	else
 		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		            	   	{
+		            	   	  //matrice B già calcolata con il metodo grafico
             		           solution();
             		        }
+            		        
+            		        */
+            		        
             		        
             		        titleCentral="Solution";
     						panelInizD.setBorder(new TitledBorder(titleCentral));
     						
-    						okSolution=true;
+    					
     						
     						
             		        
@@ -556,7 +711,7 @@ public class Demo
             		     if(scrollPaneProbab!=null) { scrollPaneProbab.setVisible(true);}
                         tabProbabMi.setSelected(true);
             		    JOptionPane.showMessageDialog 
-            		    (null,"The Sum of cluster probabilities is "+sommaF+"\nIt must be equal than 1","Warning",JOptionPane.WARNING_MESSAGE);
+            		    (null,"The Sum of cluster probabilities is "+sommaF+"\nIt must be equal to 1","Warning",JOptionPane.WARNING_MESSAGE);
             		     
             		     }
             		/*
@@ -637,9 +792,9 @@ public class Demo
 		}
   }
    
-    /** Calculate the N function
+    /** Calculate the Gap function
    	* @param nC number of clusters of the model
-    * @return  double  Value of the N function
+    * @return  double  Value of the Gap function
     **/ 
    public double enneF(int nC)
    {
@@ -663,9 +818,9 @@ public class Demo
      return summ;
    }
    
-    /** Calculate the M function
+    /** Calculate the First Order Moment E1
    	* @param nC number of clusters of the model
-    * @return  double  Value of the M function
+    * @return  double  Value of the First Order Moment
     **/  
 	 public double emmeF(int nC)
    {
@@ -682,6 +837,47 @@ public class Demo
     
      return sum;
    }
+   
+   /** Calculate the Second Order Moment E2
+   	* @param nC number of clusters of the model
+    * @return  double  Value of the Second Order Moment
+    **/  
+	 public double emme2F(int nC)
+   {
+   	int n=Math.round((nC-1)/2); 
+   	double sum=0.0;
+    //int num=-n;
+     for (int i=0;i<nC;i++)
+     {
+     	sum=sum+(i*i*f.get(i));
+     //	System.out.println("F () "+f.get(i));
+     	//num=num+1;
+         //System.out.println("emmeF"+sum);
+     }
+    
+     return sum;
+   }
+   
+      /** Calculate the Skewness E3
+   	* @param nC number of clusters of the model
+    * @return  double  Value of the Skewness
+    **/  
+	public double emme3F(int nC)
+   {
+   	int n=Math.round((nC-1)/2); 
+   	double sum=0.0;
+    //int num=-n;
+     for (int i=0;i<nC;i++)
+     {
+     	sum=sum+(i*i*i*f.get(i));
+     //	System.out.println("F () "+f.get(i));
+     	//num=num+1;
+         //System.out.println("emmeF"+sum);
+     }
+    
+     return sum;
+   }
+   
    
        /** Open Menu windows to set parameter expected value and standard deviation in Gaussian Distribution
    	 **/  
@@ -936,15 +1132,17 @@ public class Demo
 	             	System.out.println("beta: "+beta);
 	             	endBeta=true;
 	             }
-	            System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+	            
               }
               else
               {
                 
-                beta=0.0;	System.out.println("beta: "+beta);
+                beta=0.0;
+                funct="0";
+                System.out.println("beta: "+beta);
                 endBeta=true;
               }
-              System.out.println(beta+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+              
             }   
               
             catch (NumberFormatException  ex)
@@ -963,6 +1161,7 @@ public class Demo
       else
       {
       	beta=0.0;
+      	funct="0";
       }
       
       
@@ -1005,13 +1204,13 @@ public class Demo
              	
          	  if ((distanceMu.getText()!=null) && (distanceMu.getText().equals("")==false))
          	  {	
-          	     int valore=Integer.parseInt(distanceMu.getText());     
+          	     double valore=Double.parseDouble(distanceMu.getText());     
 	             if (valore<0)
 	             { 
 	               
 	               
 	               JOptionPane.showMessageDialog
-	            (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);
+	            (null,"Insert a Number greater than 0","Warning",JOptionPane.WARNING_MESSAGE);
 	               
 	               
 	               distanceMu.setText(precValue);
@@ -1028,14 +1227,14 @@ public class Demo
               else
               {
                 distanceMu.setText("0");
-                mu=0;
+                mu=0.0;
                 end=true;
               }
             }   
               
             catch (NumberFormatException  ex)
             {
-            	JOptionPane.showMessageDialog (null,"Insert a Number between 0 and 1","Warning",JOptionPane.WARNING_MESSAGE);             
+            	JOptionPane.showMessageDialog (null,"Insert a Number greater than 0","Warning",JOptionPane.WARNING_MESSAGE);             
 	             distanceMu.setText(precValue);  
 	             
 	             end=false;
@@ -1190,6 +1389,129 @@ public void unif2B(int iId, int hId)
 	   }
  }  
 } //end unif2B
+
+   /** Set 2D Matrix B in the consensus/dissent in Uniform Distribution interaction mode 
+    *  dependent from Test & Candidate Selected
+   	*  @param iId - Test cluster
+   	*  @param hId - Candidate clusters
+    **/
+
+public void unif2BCD(int iId, int hId)
+{
+  
+    double y=1.0;
+  	double z=hId+1.0;
+  
+ 
+ if (Math.abs(iId-hId)>=mu) //DISSENT MODE - probabilita esterne ad h e i
+ {
+  if (nCluster>0)
+  {
+  	
+  	coop= y/z;
+    //coop=round(coop,4);
+  }
+  else
+  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+ 	
+ 	if (hId<iId) //nulli a destra di h
+    {
+		  if (nCluster>0)
+		  {
+		  	coop= y/z ;
+		   // coop=round(coop,4);
+		  }
+		  else
+		  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+		  
+	   for (int i=0;i<=hId;i++)
+	   {
+	     B[i][hId][iId]=coop;
+	   	//table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }
+	   for (int i=hId+1;i<nCluster;i++)
+	   {
+	     B[i][hId][iId]=0.0;
+	   	//table.setValueAt("0.0",i,1);
+	   
+	   }
+    }
+    else //nulli a sinistra
+    if (hId>iId)
+    {
+    	if (nCluster>0)
+		  {
+		  	double a=1.0;
+		  	double kk=nCluster-hId;
+		  	coop= ( a / kk ) ;
+		    //coop=round(coop,4);
+		  }
+		  else
+		  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+    	for (int i=0;i<hId;i++)
+	   {
+	   	B[i][hId][iId]=0.0;
+	   	//table.setValueAt("0.0",i,1);
+	     
+	   }
+	   for (int i=hId;i<nCluster;i++)
+	   {
+	     
+	   	B[i][hId][iId]=coop;
+	   	//table.setValueAt(String.valueOf(coop),i,1);
+	   
+	   }   
+    }
+ }
+ else
+ if (Math.abs(iId-hId)<mu) //CONSENSUS MODE - probabilita interne ad h e i
+ {
+   
+      if (nCluster>0)
+	  {
+	  	coop= ( 100 / (Math.abs(hId-iId)+1.0 )) * 0.01 ;
+	    //coop=round(coop,3);
+	  }
+	  else
+	  {coop=1.0;} //(1/nCluster);//probabilita di ogni singolo cluster
+    	
+       for (int i=0;i<nCluster;i++)
+	   {
+	   	if (hId<iId)
+	   	{
+		   	if ((i<hId) || (i>iId))
+		   	{
+		       B[i][hId][iId]=0.0;
+		   	//table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   //table.setValueAt(String.valueOf(coop),i,1);
+		     }
+	   	}
+	   	else
+	   	if (hId>iId)
+	   	{
+		   	if ((i<iId) || (i>hId))
+		   	{
+		       B[i][hId][iId]=0.0;
+		   	   //table.setValueAt("0.0",i,1);
+		    }
+		     else
+		     {
+		   
+		   	   B[i][hId][iId]=coop;
+		   	   //table.setValueAt(String.valueOf(coop),i,1);
+		     }
+		 }
+	   	
+	   }
+ }  
+} //end unif2BCD
    
       /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
    	* @param tempo index of timestep
@@ -1252,7 +1574,66 @@ public void unif2B(int iId, int hId)
    
    }//end calculateBLU
    
-
+ /** Calculate the B Matrix complete to Cons/Diss  Linear Uniform distribution
+   	* @param tempo index of timestep
+    **/  
+    
+  //matrice b corretta e costruita dal grafico 
+   public void calculateBLUCD(int tempo)
+   {
+   	
+   	  int n=Math.round((nCluster-1)/2); 
+   	  
+   	  int hIdprec=hId;
+   	  int iIdprec=iId;
+   	
+   	
+   			//resetB(nCluster);
+   			
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			B[h][k][i] = 0.0; 
+			
+		}
+		
+		
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			
+			if  ( (h==k) && (h==i) )
+			{ B[i][h][k]= 1.0; } 
+			
+	
+		}
+		
+		
+	    for(int h=0; h<nCluster; h++) //
+		for(int i=0; i<nCluster; i++) // 
+		{
+		
+			if (h!=i)
+			{
+			  unif2BCD(i,h);
+			}
+			else
+			{
+				//B[i][i][h]=1;
+			}
+			
+		
+		}
+		
+		
+		
+	  hId= hIdprec;
+   	  iId =iIdprec;
+		
+   
+   }//end calculateBLUCD
    
    
    /** Calculate the B Matrix complete to Coop/Comp  Non Linear First Neighbor
@@ -1283,17 +1664,7 @@ public void unif2B(int iId, int hId)
 		{
 			if  ( (h==k) && (h==i) )
 			{ B[i][h][k]= 1.0; } 
-			/*
-			if ( (Math.abs(h-k)>=mu) && (h>n+1) && (k>n+1) && (h==i) )			
-			{
-		      B[h][k][i] = 1;
-			}
 			
-			if ( (Math.abs(h-k)>=mu) && (h<n+1) && (k<n+1) && (h==i) )			
-			{
-		      B[h][k][i] = 1;
-			}
-			*/
 			//scelta tra competizione e cooperazione
 			
 			if (Math.abs(k-h)<mu) //competizione
@@ -1320,12 +1691,12 @@ public void unif2B(int iId, int hId)
 			     //triangolare superiore
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h) )
 			     {
-			        B[i][h][k] =1.0 - functions;//( beta0 + beta * enneF(nCluster) );
+			        B[i][h][k] =1.0 - (beta0+beta*functions);//( beta0 + beta * enneF(nCluster) );
 			       
 			     }
 			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h+1) )
 			     {
-			        B[i][h][k] =functions;//( beta0 + beta * enneF(nCluster) );
+			        B[i][h][k] =(beta0+beta*functions);//( beta0 + beta * enneF(nCluster) );
 			       
 			     }
 			 
@@ -1337,14 +1708,14 @@ public void unif2B(int iId, int hId)
 				//System.out.println(i+" "+h+" "+k);
 			     if ( (h<k) && (i==h+1) )
 			     {
-			        B[i][h][k] =functions;//( beta0 + beta * enneF(nCluster)  );
+			        B[i][h][k] =(beta0+beta*functions);//( beta0 + beta * enneF(nCluster)  );
 			        
 			        
 			     }
 			     
 			     if (  (h<k) &&  (i==h) )
 			     {
-			        B[i][h][k] = 1.0 - functions;//( beta0 + beta * enneF(nCluster)  );
+			        B[i][h][k] = 1.0 - (beta0+beta*functions); //( beta0 + beta * enneF(nCluster)  );
 			        
 			     }
 			     //triangolare inferiore
@@ -1386,140 +1757,152 @@ public void unif2B(int iId, int hId)
    
    }//end calculateB
     
+       /** Calculate the B Matrix complete to Consensus/Dissent  Non Linear First Neighbor
+   	* @param tempo index of timestep
+    **/  
+   public void calculateBCD(int tempo)
+   {
+   	  
+   	  int n=Math.round((nCluster-1)/2); 
+   	
+   	double functions= function(funct);
+   			//resetB(nCluster);
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			B[h][k][i] = 0.0; 
+	
+		}
+		
+		
+		
+		for(int i=0; i<nCluster; i++) //1 indice di matrice = 
+		{
+		for(int h=0; h<nCluster; h++) //2 indice di riga
+		{
+		for(int k=0; k<nCluster; k++) //3 indice colonna
+		{
+			if  ( (h==k) && (h==i) )
+			{ B[i][h][k]= 1.0; } 
+			
+			//scelta tra consenso dissenso
+			
+			if (Math.abs(k-h)>=mu) //dissent
+			{
+			     if ( (h==0) && (h!=k) && (i==h) )
+			     {
+			        B[i][h][k] = 1.0;
+			     }
+			     
+			     if ( (h==nCluster-1) && (h!=k) && (i==h) )
+			     {
+			        B[i][h][k] = 1.0;
+			     }
+			     
+			     if ( (h!=0) && (h!=k) && (h<k) && (i==h-1) )
+			     {
+			        B[i][h][k] = beta0;
+			     }
+			     
+			     if ( (h!=0) && (h!=k) && (h<k) && (i==h) )
+			     {
+			        B[i][h][k] = 1.0 - beta0;
+			     }
+			     //triangolare superiore
+			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h) )
+			     {
+			        B[i][h][k] =1.0 - (beta0+beta*functions);//( beta0 + beta * enneF(nCluster) );
+			       
+			     }
+			     if ( (h!=nCluster-1) && (h>k) && (h!=k) && (i==h+1) )
+			     {
+			        B[i][h][k] =(beta0+beta*functions);//( beta0 + beta * enneF(nCluster) );
+			       
+			     }
+			 
+			 
+			}
+			else
+			//consensus
+			{
+				//System.out.println(i+" "+h+" "+k);
+			     if ( (h<k) && (i==h+1) )
+			     {
+			        B[i][h][k] =(beta0+beta*functions);//( beta0 + beta * enneF(nCluster)  );
+			        
+			        
+			     }
+			     
+			     if (  (h<k) &&  (i==h) )
+			     {
+			        B[i][h][k] = 1.0 - (beta0+beta*functions);//( beta0 + beta * enneF(nCluster)  );
+			        
+			     }
+			     //triangolare inferiore
+			     if (  (h>k)  && (i==h) )
+			     {
+			        B[i][h][k] = 1.0 - beta0; 
+			     
+			     }
+			     if ((h>k)  && (i==h-1))
+			     {
+			        B[i][h][k] = beta0; 
+			        
+			     }
+		    }
+		 }
+		
+		
+		}
+	
+    	}
+	
+	
+		
+		//fine calcolo matrici BCD
+   
+   		double sommab=0;
+	  for(int i=0; i<nCluster; i++) 
+	  {
+	  	sommab=0;
+	  	for(int h=0; h<nCluster; h++) 
+	    //for(int k=0; k<nCluster; k++) 
+	    {
+	    	sommab=sommab+B[i][i][h];
+	     // System.out.println("B "+"( "+h+" "+h+" "+i+" = "+B[h][h][i]);
+	    }   
+	  
+	  }
+	  //System.out.println("SOMMA B: "+sommab);
+   
+   }//end calculateBCD
 
      
-     /** Calculate the solution of the Cluster Model in Cooperation/Competition Mode and Uniform Distribution
-      **/  
-   public void solutionLU()
-   {
-      double somma=0;
-   	 
-   	  double[] ff=new double [nCluster];
-   	 // nt=3;
-   	   	  
-   	  for (int i=0;i<nCluster;i++)
-   	  {
-   	    ff[i]=(double) f.get(i);
 
-   	  }
-   	  	   
-   	  enne=new double [nt+1];
-      emme=new double [nt+1];
-      int n=Math.round((nCluster-1)/2);
       
-      
-       resetEta(nCluster);
-        
-        
-        setEta(nCluster,eta0);
-         df=new double[nCluster];
-        	
-        	               
-        calculateBLU(0);
-       
-                      
-	      for (int tempo=0;tempo<nt;tempo++)
-	      {
-	      //	System.out.println("iterazione "+tempo);
-	      	enne[tempo]=enneF(nCluster);
-	      
-	      	emme[tempo]=emmeF(nCluster);
-	   		
-	        //calculateBLU(tempo);
-	        
-	           for (int i=0;i<nCluster;i++)
-	           {
-	              df[i]=0.0;   
-	              //System.out.println(i+"  "+f.get(i));
-	           }         
-	         
-	           
-			        for(int i=0; i<nCluster;i++) 	
-		        	{
-						for(int k=0; k<nCluster; k++)
-						{ 
-							for(int h=0; h<nCluster; h++) 
-				            {
-				           
-				             df[i]=df[i]+eta[h][k]*B[i][h][k]*f.get(h)*f.get(k);
-				            
-				                   
-				 //System.out.println("f("+h+") "+f.get(h)+"  f("+k+") "+ f.get(k) + " B ("+i+" "+h+" "+k+") "+B[i][h][k]+" "+df[i]);
-				 
-				            }
-				            df[i]=df[i]-(eta[i][k]*(f.get(i)*f.get(k)));
-				         			        //System.out.println("df("+i+")= "+df[i]); 
-				         			         
-			            } 
-			          //  System.out.println("df "+df[i]);
-		            }
-                                 
-           for (int i=0;i<nCluster;i++)
-           {         
-             f.set(i,f.get(i)+deltat*df[i]);
-           }
-	        
-
-	            	
-	      
-	      } //fine ciclo timesteps tempo da 1 a Nt 
-      
-          System.out.println("Soluzione");
-      
-      
-           for (int i=0;i<nCluster;i++)
-           {
-             System.out.println("df "+df[i]);
-             ff[i]=f.get(i);
-             somma=somma+f.get(i);
-           }
-           
-              
-              
-                System.out.println("\n\nSomma Finale: "+somma+"\n\n");
-                
-    		 printB(B,nCluster);
-           
-          String text="Linear Uniform Distribution Probabilities" +" th: "+String.valueOf(mu);
-           String[] s= new String [nCluster];
-      ChartBar cb=new ChartBar(ff, s, text);
-      cb.chart(nCluster,ff,text);
-      
-   } //end solutionLU   
-      
-    /** Calculate the solution of the Cluster Model in Cooperation/Competition Mode
+    /** Calculate the solution of the Cluster Model 
     **/  
-   public void solutionCC()
+   public void solution()
    {
    	
    	 double somma=0;
+   		okSolution=true;
+ 
    	 
-   	 /*
-   	  double a=0.0476;
-      for (int i=0;i<5;i++)
-      {
-        f.set(i,a);
-      }
-      double b=0.1667;
-      for (int i=5;i<9;i++)
-      {
-        f.set(i,b);
-      }
-   	  f.set(9,a);
-   	  double somma2=0;
-   	  for (int i=0;i<10;i++)
-   	  {
-   	    somma2=somma2+f.get(i);
-   	  }
-   	  somma2=1-somma2;
-   	  
-   	  f.set(10,somma2);
    	 
-   	  */
    
-   	
-   	
-   	
+   	                if (beta>0.0) //non linear case: need a non linear function
+	            	{
+	            	  while ((funct.equals("0")==true) || (funct.equals("")==true) || (funct==null))
+	            	  {
+	            	     funct="";
+            			 funct=JOptionPane.showInputDialog("Insert Function: ");
+	            	  }
+	            	}
+	            	
+	            	  
+  
    	
    	  double[] ff=new double [nCluster];
    	  
@@ -1533,25 +1916,65 @@ public void unif2B(int iId, int hId)
    	  
    	  enne=new double [nt];
       emme=new double [nt];
+      emme2=new double [nt];
+      emme3=new double [nt];
       int n=Math.round((nCluster-1)/2);
       System.out.println("calcola soluzione");
       
        resetEta(nCluster);
-        
-        
+              
         setEta(nCluster,eta0);
-        df=new double[nCluster];
+        df=new double[nCluster];      
       
       for (int tempo=1;tempo<nt;tempo++)
       {
       	
-      	enne[tempo]=enneF(nCluster);
+      	enne[tempo]=enneF(nCluster); //Gap(V)
       
       	emme[tempo]=emmeF(nCluster);
+      		emme2[tempo]=emme2F(nCluster);
+      			emme3[tempo]=emme3F(nCluster);
     	
-      
-		
-        calculateB(tempo);
+    	if ((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true)
+		{
+		    if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("First Neighbor")==true))		
+		            	   	  {	
+		            	   	   calculateB(tempo);
+		            	      }
+		            	      else
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Uniform")==true))		
+		            	   	  {	
+		            	   	   
+		            	   	    calculateBLU(0);     //soluzione uniforme e lineare
+		            	   	   
+		            	      }
+		            	   	  
+		}
+		else
+		if ((tableData.getValueAt(2, 1).toString()).equals("Cons / Diss")==true)
+		{
+		    if ((modality.equals("Consensus/Dissent")==true) && (distribution.equals("First Neighbor")==true))		
+		            	   	  {	
+		            	   	   calculateBCD(tempo);
+		            	      }
+		            	      else
+		            	      if ((modality.equals("Consensus/Dissent")==true) && (distribution.equals("Uniform")==true))		
+		            	   	  {	
+		            	   	   
+		            	   	    calculateBLUCD(0);     //soluzione uniforme e lineare
+		            	   	   
+		            	      }
+		            	   	  
+		}
+		else
+		if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
+		{
+			modality="User Defined";
+		    //matrice B già calcolata con il metodo grafico
+            
+        }
+    	
+      // calculateB(tempo);
 		
 		  
            for (int i=0;i<nCluster;i++)
@@ -1581,20 +2004,16 @@ public void unif2B(int iId, int hId)
          
            for (int i=0;i<nCluster;i++)
            {
-           	 
-           
              f.set(i,f.get(i)+deltat*df[i]);
            // System.out.println(f.get(i)+" f  ** df "+df[i]);
            }
-            
-           
-              	
-      
+   
       }//fine ciclo timesteps tempo da 1 a Nt 
       
       System.out.println("Soluzione");
       
-      
+      // framWait.setVisible(false);
+   
            for (int i=0;i<nCluster;i++)
            {
             System.out.println("df "+df[i]);
@@ -1614,179 +2033,46 @@ public void unif2B(int iId, int hId)
                 
            printB(B,nCluster);
            String text=new String();
-           if (beta==0)
+           String linear=new String();
+           if (modality.equals("User Defined"))
            {
-             text="First Neighbor Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
+           	  text="User Defined";
            }
            else
            {
-             text="First Neighbor Non Linear Distribution Probabilities" +" th: "+String.valueOf(mu);
-           }
+	           if (modality.equals("Cooperation/Competition")==true)
+	           {
+	             text="C/C ";
+	           }
+	           else
+	           if (modality.equals("Consensus/Dissent")==true)
+	           {
+	             text="C/D ";
+	           }
+	           if ((beta==0) && (distribution.equals("First Neighbor")==true))
+	           {
+	           	linear=" Linear ";
+	             
+	           }
+	           else
+	           if (beta>0)
+	           {
+	           	  linear=" Non Linear ";
+	            
+	           }
+              text=text+distribution+linear+"Distribution Probabilities" +" th: "+String.valueOf(mu);
+          }
+           
            String[] s= new String [nCluster];
+           
       ChartBar cb=new ChartBar(ff, s, text);
       cb.chart(nCluster,ff,text);
+      
+        saveSolMi.setVisible(true);
+      
    }
    
    
-   
-    /** Calculate the solution of the Cluster Model in User Defined Mode
-    **/  
-   public void solution()
-   {
-   	
-   	 double somma=0;
-   	 
-   	 /*
-   	  double a=0.0476;
-      for (int i=0;i<5;i++)
-      {
-        f.set(i,a);
-      }
-      double b=0.1667;
-      for (int i=5;i<9;i++)
-      {
-        f.set(i,b);
-      }
-   	  f.set(9,a);
-   	  double somma2=0;
-   	  for (int i=0;i<10;i++)
-   	  {
-   	    somma2=somma2+f.get(i);
-   	  }
-   	  somma2=1-somma2;
-   	  
-   	  f.add(10,somma2);
-   	 
-   	*/
-   	
-   	
-   	
-   	
-   	
-   	  double[] ff=new double [nCluster];
-   	  
-   	  
-   	  for (int i=0;i<nCluster;i++)
-   	  {
-   	    ff[i]=(double) f.get(i);
-   	    //System.out.println(ff[i]);
-   	  }
-   	  
-   	  
-   	  enne=new double [nt];
-      emme=new double [nt];
-      int n=Math.round((nCluster-1)/2);
-      System.out.println("calcola soluzione");
-      
-       resetEta(nCluster);
-        
-        
-        setEta(nCluster,eta0);
-        df=new double[nCluster];
-      
-      for (int tempo=1;tempo<nt;tempo++)
-      {
-      	
-      	enne[tempo]=enneF(nCluster);
-      
-      	emme[tempo]=emmeF(nCluster);
-    	
-       
-		/*
-		if ( (Math.abs(h-k)>=mu) && (h>n+1) && (k>n+1) )	
-		
-		{
-		   resetEta(nCluster);
-		}
-		
-		if ( (Math.abs(h-k)>=mu) && (h<n+1) && (k<n+1) )	
-		
-		{
-		   resetEta(nCluster);
-		}
-		*/
-		
-        //calculateB(tempo);
-		
-		  
-           for (int i=0;i<nCluster;i++)
-           {
-              df[i]=0.0;   
-              //System.out.println(i+"  "+f.get(i));
-           }
-           
-          
-        	for(int i=0; i<nCluster;i++) 	
-        	{
-				for(int k=0; k<nCluster; k++)
-				{ 
-					for(int h=0; h<nCluster; h++) 
-		            {
-		           
-		             df[i]=df[i]+(eta[h][k]*B[i][h][k]*f.get(h)*f.get(k));
-		            // System.out.println(f.get(h)+"  B (h.i.k) **  "+B[h][i][k]);
-		            }
-		            df[i]=df[i]-(eta[i][k]*f.get(i)*f.get(k));
-		           
-	            } 
-	          //  System.out.println("df "+df[i]);
-            }
-            
-            
-         // double deltaa=0.000002;
-           for (int i=0;i<nCluster;i++)
-           {
-           	 
-           
-             f.set(i,f.get(i)+deltat*df[i]);
-           // System.out.println(f.get(i)+" f  ** df "+df[i]);
-           }
-            
-           
-              	
-      
-      }//fine ciclo timesteps tempo da 1 a Nt 
-      
-      System.out.println("Soluzione");
-      
-      
-           for (int i=0;i<nCluster;i++)
-           {
-            System.out.println("df "+df[i]);
-             ff[i]=f.get(i);
-             somma=somma+f.get(i);
-           }
-           
-              
-              // System.out.println("ENNE e EMME");
-               
-               for (int i=0;i<tmax;i++)
-               {
-               	 
-                  //System.out.println("enne: "+enne[i] +" *** "+emme[i]);
-               }
-                System.out.println("\n\nSomma Finale: "+somma+"\n\n");
-                
-                for(int i=0; i<nCluster; i++) 
-		{ 
-			for(int h=0; h<nCluster; h++) 
-			{ 
-				for(int k=0; k<nCluster; k++) 
-				{
-					
-					
-					System.out.print(B[i][h][k] + " "); 
-				}
-					System.out.println(); 
-			} 
-			System.out.println(); 
-		}
-           
-           String text="User Defined Distribution Probabilities";
-           String[] s= new String [nCluster];
-      ChartBar cb=new ChartBar(ff, s, text);
-      cb.chart(nCluster,ff,text);
-   }
    
     /** Convert RGB Color in Hexadecimal Color
    	* @param col Color to convert 
@@ -2231,8 +2517,6 @@ public String parseMatrix(double m[][][], int h,int r,int c)
 		//	System.out.println(matrix); 
     
 	     return matrix;
-	
-	
 
 }
  
@@ -2244,9 +2528,7 @@ public void userDefined()
   {
    
   // resetB(nCluster);
-   
- 
-   
+    
    MyEdge edgess=new MyEdge();
 							
 							if ((hId!=-1) && (iId!=-1))
@@ -2297,15 +2579,7 @@ public void userDefined()
 							    }
 							   }
 							}
-   
-   
-   
-   
-   
-  
-  
   }
-
 }
 
 /* Set the cooperation/competition in Non-Uniform Distribution interaction mode between the clusters
@@ -3155,78 +3429,7 @@ public void cooperation_()
    
 }//end cooperation
 
-/*
-public void consent()
-{
-  MyEdge edgess;
-  
 
-  mode="Consent";
-  
-  if (nCluster>0)
-  {
-  	coop= ( 100 / (iId+1) ) * 0.01 ;
-    //coop=round(coop,3);
-  }
-  else
-  {coop=1;} //(1/nCluster);//probabilita di ogni singolo cluster
-  
- System.out.println("cooop: "+coop);
-  
-  for (int i=0;i<nCluster;i++)
-   {
-   	if (i>iId)
-   	{
-   	B[hId][i][iId]=coop;
-   	table.setValueAt(String.valueOf(coop),i,1);
-    }
-    else
-    {
-      B[hId][i][iId]=0;
-   	   table.setValueAt("0.0",i,1);
-    }
-   }
-  
-  String s1=String.valueOf(hId);
-  
-  scrollPaneProp.setVisible(true);
-  
-  if (edgePainted()==true)
-		{ removeAllEdges();}
-  
- // removeAllEdges();
- 
-   for (int i=0;i<nCluster;i++)
-   {
-   	
-    
-    	String s2=String.valueOf(i);
-        if(i!=hId)
-        {
-   								g.getModel().beginUpdate();
-				               
-				                  edgess=graph.addEdge(s1, s2);
-				                if (i>iId)
-				                {
-	        					  graph.setEdgeWeight(edgess,coop);
-	        			        }
-	        			        else
-	        			        
-				                {
-	        					  graph.setEdgeWeight(edgess,0);
-	        			        }
-	        					
-	        					  
-	        					  freccia_but.setSelected(true);
-	        					  
-	        				   g.getModel().endUpdate();
-	     }
-   
-   }
-   
-   
-}
-*/
  public static void main(String[] args) //throws InterruptedException
  {
     Demo vai=new Demo();
@@ -3975,6 +4178,10 @@ public void consent()
 				 
 				if (selected.equals("User Defined"))
 				{
+					if (modality.equals("User Defined")==false)
+					{
+					  resetB(nMax);
+					}
 					 //tableData.setValueAt("",3,0);
 					 //tableData.setValueAt("",3,1);
 					 modality="User Defined";
@@ -3983,9 +4190,8 @@ public void consent()
 	  
 				        tableData.setPreferredSize(new Dimension(150,60));
 				        tableData.setRowHeight(3,1);
-					 
-					modality="User Defined";	
-					resetB(nMax);
+						
+				//	resetB(nMax);
 					 System.out.println("user defined");
 					if ((hId!=-1) && (iId!=-1) && (nCluster>0))
 					{
@@ -4060,11 +4266,11 @@ public void consent()
 	                tableData.setPreferredSize(new Dimension(150,74));
 	                tableData.setRowHeight(3,18);
 					
-				  modality="Consent/Dissent";
+				  modality="Consensus/Dissent";
 				  displayCC();
 					if ((hId!=-1) && (iId!=-1))
 					{
-							System.out.println("consent/dissent");
+							System.out.println("consensus/dissent");
 							if ((tableData.getValueAt(2, 1).toString()).equals("Cons / Diss")==false)
 							{
 							
@@ -4079,7 +4285,7 @@ public void consent()
 							    //consent();
 							 }
 				    }
-				}//end consent/dissent
+				}//end consensus/dissent
 			
 			}
 		});//end combobox1
@@ -4168,6 +4374,14 @@ public void consent()
 					distribution="Gaussian";
 				   displayGauss();
 					 System.out.println("gauss");
+					 Vector<Double> g=new Vector<Double>();
+					 
+					 for (int i=0;i<200;i++)
+					 {
+					 	g.add(gaussValue(i,average,deviation)) ;
+				     }
+					 GraphCurve gc=new GraphCurve(g);
+      			 	gc.drawCurve(g,"Gaussian");
 				}//end gauss
 				
 			}
@@ -5626,7 +5840,7 @@ public void consent()
     {  
     	
       funct=new String();
-      funct="beta0+beta*Gap(v)";
+      funct="0";
       okSolution=false;
       						
     
@@ -5637,7 +5851,7 @@ public void consent()
        labelChanged=false;
        //inizializzazione variabili globali 
        mode="";
-       mu=5;
+       mu=5.0;
        eta0=0.6;
        beta0=0.6;
        beta=0.0;
@@ -5966,19 +6180,21 @@ public void consent()
 	 tabVarMi = new JCheckBoxMenuItem (new MenuItemAction("Model Parameters", null, KeyEvent.VK_C));
 		
 	 tabProbabMi = new JCheckBoxMenuItem (new MenuItemAction("Distribution", null, KeyEvent.VK_C));
-                
+                tabProbabMi.setToolTipText("Show Probability Distribution");
         tabPropMi = new JCheckBoxMenuItem (new MenuItemAction("Solution Parameters", null, KeyEvent.VK_C));
 
  	 edgeLabelMi = new JCheckBoxMenuItem (new MenuItemAction("Show Labels", null, KeyEvent.VK_C));
       
         colorMi = new JCheckBoxMenuItem (new MenuItemAction("Change Colors", null, KeyEvent.VK_C));
-        
+        colorMi.setToolTipText("Choose cluster colors");
         resizeMi = new JCheckBoxMenuItem (new MenuItemAction("Cluster Resizing", null, KeyEvent.VK_C));
      
      final  JMenuItem initMi = new JMenuItem(new MenuItemAction("Initial Distribution", null, 
                 KeyEvent.VK_C));
-     
-       
+                initMi.setToolTipText("Reset Distribution");
+      final  JMenuItem modelMi = new JMenuItem(new MenuItemAction("Model", null, 
+                KeyEvent.VK_C));
+        modelMi.setToolTipText("Show Model Parameters");
 
         //JMenuItem copyMi = new JMenuItem(new MenuItemAction("Copy", null, KeyEvent.VK_C));
 
@@ -6033,9 +6249,10 @@ public void consent()
 	            @Override
 	            public void actionPerformed(ActionEvent event) 
 	            {
-	            	okSolution=true;
+	            	
+	            	
 	       			start();
-	       			saveSolMi.setVisible(true);
+	       		//	saveSolMi.setVisible(true);
     						
 	            
 	            }
@@ -6057,18 +6274,31 @@ public void consent()
 	            
               });
             
+              //tasto close
              newMi.addActionListener(new ActionListener() 
              {
 	            @Override
 	            public void actionPerformed(ActionEvent event) 
 	            {
+	            	int jopt2;
 	            	try
 	            	{
+		                jopt2= JOptionPane.showConfirmDialog
+			            (null,"Do you want Save the Project before close it?","Warning",JOptionPane.YES_NO_OPTION);
+			           System.out.println("scelta: "+jopt2);
+			            if (jopt2==0)
+			            {
+			             saveXmlFile();
+			             
+			            }
+	            		
+	            		
 	                g.removeCells(g.getChildVertices(g.getDefaultParent()));
 	                i=0;
 	                saveFileAs="NewKaos"; frame.setTitle(saveFileAs);
 	                nCluster=0;
 	                beta=0.0;
+	                funct="0";
 	                
 	                scrollPaneProbab.setVisible(false);
                          scrollPaneProp.setVisible(false);
@@ -6095,6 +6325,11 @@ public void consent()
 	                	initF = new Vector<Double>(nCluster);
 	             			  			//splitPanel.validate();
 	       			 //f=new Vector<String>;
+	       			 modality="";
+	       			 distribution="";
+	       			 tableData.setValueAt(modality, 2, 1);
+                	tableData.setValueAt(distribution, 3, 1);
+                	sessionOpen=false;
 	       			 
 	               
 	            }
@@ -6122,6 +6357,8 @@ public void consent()
 	            @Override
 	            public void actionPerformed(ActionEvent event) 
 	            {
+	            	openChmFile("helpkaos.chm"); //open chm help file
+	            	
 	            	helpK="KAOS: a Kinetic Theory Tool for the Modeling of Complex Social Systems\n\n"+
 	            	"KAOS is a tool designed for the definition and the transient solution of KTAP models.\n"+  
 	            	"KAOS provides a graphical interface . The modeler can graphically represent the KTAP model by enumerating\n"+ 
@@ -6165,7 +6402,8 @@ public void consent()
 		  		              " _________________________________________________________________"+"        "+"\n\n\n";
 		  		     */         	
 	            	
-	       			 JOptionPane.showMessageDialog(null,helpK,"Help Kaos",JOptionPane.INFORMATION_MESSAGE);	
+	       			 //JOptionPane.showMessageDialog(null,helpK,"Help Kaos",JOptionPane.INFORMATION_MESSAGE);
+	       			 	
 	            
 	            }
               });
@@ -6177,8 +6415,49 @@ public void consent()
 	            {
 	            	
 	       			 JOptionPane.showMessageDialog(
-					null,"Kaos Tool is realized by Ing. Giulio De Meo.\nMDSLab University of Messina\nvers. 1.0 - 2015","Information",
+					null,"Kaos Tool is realized by Ing. Giulio De Meo.\nMDSLab University of Messina\nvers. 2.0 - 2015","Information",
 					JOptionPane.INFORMATION_MESSAGE);	
+	            
+	            }
+              });
+              
+              
+             modelMi.addActionListener(new ActionListener() 
+             {
+	            @Override
+	            public void actionPerformed(ActionEvent event) 
+	            {
+	            	String infoModel=new String();
+	            
+	            	infoModel=infoModel+"\n\nNumber of Cluster:  "+String.valueOf(nCluster)+"   ";
+	                infoModel=infoModel+"\n\nEncounter Rate  (eta0) : "+String.valueOf(eta0)+"   ";
+	                infoModel=infoModel+"\n\nInteraction Mode:  "+modality+"   ";
+	                if (modality.equals("User Defined")==false)
+	                {
+		                infoModel=infoModel+"\n\nTable of Games:  "+distribution+"   ";
+		                infoModel=infoModel+"\n\nDistance (mu):  "+String.valueOf(mu)+"   ";
+		                 infoModel=infoModel+"\n\nNeighbor Probability (beta0):  "+String.valueOf(beta0)+"   ";
+		                if (beta>0.0)
+		                {
+		                  infoModel=infoModel+"\n\nNon linearity Factor (beta):  "+String.valueOf(beta)+"   ";
+		                  infoModel=infoModel+"\n\nNon linearity Function:  "+funct+"   ";
+		                }
+	                }	
+	                infoModel=infoModel+"\n\n";
+	                //setBackground(Color.white);
+	//	ch1.setForeground(Color.blue);
+	
+	   Color coltext=new Color(6,10,100); //colore blu scuro
+	  
+	   Color colborder=new Color(237,249,243); //colore celeste chiaro
+	   
+						UIManager UI=new UIManager();
+					 UI.put("OptionPane.background", colborder);
+					 UI.put("Panel.background", Color.white);
+					UI.put("OptionPane.messageForeground", coltext);
+					
+	
+	       			JOptionPane.showMessageDialog(null,infoModel,"Model Parameters",JOptionPane.INFORMATION_MESSAGE);	
 	            
 	            }
               });
@@ -6190,13 +6469,33 @@ public void consent()
 		            @Override
 		            public void actionPerformed(ActionEvent event) 
 		            {
-		              if (nCluster>0)
+		            	boolean openIDistribution=true;
+		              if ((modality.equals("User Defined")==true) && (nCluster>0))
+		              {
+		                if ((hId!=-1) || (iId!=-1))
+		                {
+		                	openIDistribution=false;
+		                 JOptionPane.showMessageDialog 
+            		    (null,"Please turn clusters to the initial position before open Initial Distribution ","Warning",JOptionPane.WARNING_MESSAGE);
+		                }
+		                else
+		                if ((hId==-1) && (iId==-1))
+		                {
+		                  openIDistribution=true;
+		                }
+		              }
+		            	
+		            
+		              if ((nCluster>0) && (openIDistribution==true))
              	      {
+             	      
 		            	
 		            	try
 		            	{
+		            		/*
 		                
-		                beta=0.0;
+		               beta=0.0;
+		                funct="0";
 		                 //	f = new Vector<Double>(nCluster);
 		                
 		                //scrollPaneProbab.setVisible(false);
@@ -6205,7 +6504,7 @@ public void consent()
 		       		//	tabProbabMi.setSelected(true);
 		       		//	tabProbabMi.setVisible(true);
 		                okSolution=false;
-		                saveSolMi.setVisible(false);
+		               saveSolMi.setVisible(false);
     						
 		                cell1On=false;
 		       			cell2On=false;
@@ -6216,10 +6515,12 @@ public void consent()
 		       			//scrollPaneProbab.setVisible(false);		 
 		       			//tabProbabMi.setVisible(false);
 		       			
-		                
+		                */
 		                
 		               
 		                	scrollPaneProbab.setVisible(false);
+		                	
+		                	
 		              
 		                	for (int i=0;i<initF.size();i++)
 		                	{
@@ -6239,7 +6540,7 @@ public void consent()
 		                	
 		             			  splitPanel.validate();
 		       			 //f=new Vector<String>;
-		       			 
+		       			 okSolution=false;
 		               
 		            }
 		            catch (Exception newwa) {System.out.println("ecc");};
@@ -6272,8 +6573,8 @@ public void consent()
                 	param=leggi.readXmlParam(saveFileAs);
                 	
                 	modality=param.get(0);System.out.println(modality);
-                	distribution=param.get(1);System.out.println(distribution);
-                	mu=Integer.parseInt(param.get(2));System.out.println(mu);
+                //	distribution=param.get(1);System.out.println(distribution);
+                	mu=Double.parseDouble(param.get(2));System.out.println(mu);
                 	eta0=Double.parseDouble(param.get(3));System.out.println(eta0);
                 	beta0=Double.parseDouble(param.get(4));System.out.println(beta0);
                 	beta=Double.parseDouble(param.get(5));System.out.println(beta);	
@@ -6281,16 +6582,26 @@ public void consent()
                 	if (modality.equals("Cooperation/Competition")==true)
                 	{
                 		modality2="Coop / Comp";
+                		distribution=param.get(1);System.out.println(distribution);
+                		tableData.setValueAt(distribution, 3, 1);
                 	}
                 	else
-                	if (modality.equals("Consent/Dissent")==true)
+                	if (modality.equals("Consensus/Dissent")==true)
                 	{
                 		modality2="Cons / Diss";
+                		distribution=param.get(1);System.out.println(distribution);
+                		tableData.setValueAt(distribution, 3, 1);
+                	}
+                	else
+                	if (modality.equals("User Defined")==true)
+                	{
+                		distribution="";
+                		modality2="User Defined";
                 	}
                 	
                 	
                 	tableData.setValueAt(modality2, 2, 1);
-                	tableData.setValueAt(distribution, 3, 1);
+                	//tableData.setValueAt(distribution, 3, 1);
                 	
                 
                 	System.out.println("lunghezze vector clust: "+clust.size());
@@ -6421,6 +6732,8 @@ public void consent()
             @Override
             public void actionPerformed(ActionEvent event) 
             {
+            	saveXmlFile();
+            	/*
               if (nCluster>0)
               {
                 //save("prova",graph);
@@ -6451,6 +6764,8 @@ public void consent()
                 catch (Exception ss){}
                 //save_xml("prova2",graph);
              }
+             */
+             
             }
         });
         
@@ -6515,7 +6830,7 @@ public void consent()
             @Override
             public void actionPerformed(ActionEvent event) 
             {   
-            
+              
              
              System.out.println(rowCol+"  Colori: "+kCol+"  "+hCol+" "+iCol);
             
@@ -6864,6 +7179,7 @@ public void consent()
          viewMenu.add(colorMi);
          viewMenu.add(resizeMi);
          viewMenu.add(initMi);
+         viewMenu.add(modelMi);
          
          helpMenu.add(pdfFuncMi);
          helpMenu.add(helpMi);
@@ -6888,7 +7204,7 @@ public void consent()
         
         
     //	cc.setBackground(Color.red);
-       JToolBar toolbar1 = new JToolBar();
+       toolbar1 = new JToolBar();
        toolbar1.setFloatable(true);//toolbar spostabile
        
        
@@ -6934,7 +7250,10 @@ public void consent()
          final ImageIcon curve= new ImageIcon(img16);
          URL img17 = getClass().getResource("icons/fx.png");
          final ImageIcon fxx= new ImageIcon(img17);
-        
+         
+         URL imgProgress = getClass().getResource("icons/progress.gif");
+         final ImageIcon imgprog= new ImageIcon(imgProgress);     
+         progress=new JButton(imgprog);
         
  		sel_but = new JButton(sel);      
     	nodo_but = new JButton(nodo);
@@ -6974,6 +7293,8 @@ public void consent()
          toolbar1.add(bar_but);
            toolbar1.add(curve_but);
            toolbar1.add(fx_but);
+           toolbar1.add(progress);
+           progress.setVisible(false);
            
            sel_but.setToolTipText("Select clusters");
            nodo_but.setToolTipText("Edit clusters");
@@ -7100,7 +7421,8 @@ public void consent()
               {   
                   
                  updateClusters();
-      
+               
+                 
                   	
             	if (freccia_but.isSelected()==false)
             	{
@@ -7132,10 +7454,13 @@ public void consent()
 							
 							if ((hId!=-1) && (iId!=-1))
 							{
+							  	
+							  
 							   for (int k=0;k<nCluster;k++)
 							   {
 							   	if ((B[k][hId][iId]>=0) && (hId!=k))
 							   	{
+							   		 	
 							   		// System.out.println(hId+" "+String.valueOf(hId)+" ->> "+String.valueOf(k)+" Peso: ");
 							   		g.getModel().beginUpdate();
 							   		
@@ -7150,11 +7475,12 @@ public void consent()
 					
 							    }
 							   }
+							 
 							}
 				}
 				else
 				{
-						
+					System.out.println("non selezionato");
 					freccia_but.setSelected(false);
 					freccia_but.setBackground(null);
 					if ((hId!=-1) && (iId!=-1))
@@ -7184,6 +7510,11 @@ public void consent()
 				{
 				  System.out.println("eccezione tasto freccia "+eccep);
 				}
+				catch(NullPointerException eccep2)
+				{
+				  System.out.println("eccezione tasto freccia "+eccep2);
+				}
+				
         
         }
 
@@ -7322,7 +7653,7 @@ public void consent()
         {
         	public void actionPerformed(ActionEvent event) 
             {
-            	if (sessionOpen==true)
+            	if (sessionOpen==true) 
             	{
             		            	
 	            	int jopt= JOptionPane.showConfirmDialog
@@ -7455,7 +7786,7 @@ public void consent()
             {
             	
             start();
-            saveSolMi.setVisible(true);
+            
 
              }
 
@@ -7466,10 +7797,17 @@ public void consent()
         {
         	public void actionPerformed(ActionEvent event) 
             {
+            	if (beta>0)
+            	{
             	funct="";
-             funct=JOptionPane.showInputDialog("Insert Function: ");
-             System.out.println("function result: "+function(funct));             
-
+	             funct=JOptionPane.showInputDialog("Insert Function: ");
+	             System.out.println("function result: "+function(funct));             
+                }
+                else
+                {
+                  JOptionPane.showMessageDialog 
+            		    (null,"Cannot insert Non Linear Function in Linear Mode ","Warning",JOptionPane.WARNING_MESSAGE);
+                }
              }
 
         });
@@ -7481,11 +7819,12 @@ public void consent()
             {  
                String text=new String();
                String linearity=new String();
-               if (beta==0)
+               if (beta==0.0)
                {
                  linearity="Linear";
                }
                else
+               if (beta>0.0)
                {
                 linearity="Non Linear";
                }
@@ -7538,45 +7877,26 @@ public void consent()
 
         });
         
-                    //premuto per mostrare il grafico curvilineo  delle funzioni Enne
-       curve_but.addActionListener(new ActionListener() 
+      //premuto per mostrare il grafico curvilineo  delle funzioni Enne Emme Emme2 Emme3
+        curve_but.addActionListener(new ActionListener() 
         {
         	public void actionPerformed(ActionEvent event) 
-            {
-            	int enneLeng=enne.length;
-            	
-            	if ((enneLeng>0) && (nCluster>0))
-            	{  
-            	   enneV=new Vector<Double>();
-            	  int i=0; int delta=(int)(nt/tmax);
-                do
-               {
-               	  
-               	
-                   enneV.add(emme[i]);
-                  i=i+delta;
-               }
-               while(i<nt);
-            	   
-            	   
-		          
-            	
-            	    String text="Expected Value";
-           			
-      				GraphCurve gc=new GraphCurve(enneV);
-      				gc.drawCurve(enneV,text);
-	            
-            	}
+            { 
+              if ((nCluster>0) && (okSolution==true))	
+              {
+              
+              	OptionPan opp=new OptionPan();
+                opp.openPanCurve();
+                          
             	
             	
-            	
-            	sel_but.setSelected(false);
+               sel_but.setSelected(false);
         	   nodo_but.setSelected(false);
                rect_but.setSelected(false);
                triangle_but.setSelected(false);
                go_but.setSelected(true);
                piu_but.setSelected(false);
-              meno_but.setSelected(false);
+               meno_but.setSelected(false);
                canc_but.setSelected(false);
                nodo_but.setBackground(null);
                triangle_but.setBackground(null);
@@ -7585,14 +7905,15 @@ public void consent()
                canc_but.setBackground(null);  
                 curva_but.setSelected(false);
                curva_but.setBackground(null); 
-               sel_but.setBackground(null); 
-              // go_but.setBackground(Color.BLUE); 
-               
-               
-
+               sel_but.setBackground(null);               
+         }
+         else //prima devi calcolare la soluzione
+         {
+           JOptionPane.showMessageDialog 
+		            		    (null,"First calculates the Solution","Warning",JOptionPane.WARNING_MESSAGE);
+         }          
         }
-
-        });
+       });
     	
     
     	frame.add(BorderLayout.NORTH,toolbar1);
@@ -7723,9 +8044,24 @@ public void consent()
              			  double x1=  r*(Math.cos(rad))+r+x0;
  		   				  double y1= -r*(Math.sin(rad))+r+y0;
              			  
-             			  if (nCluster>1)
+             			   if ((nCluster>1) && ((tableData.getValueAt(2, 1).toString()).equals("")==false))
              			   {
+             			  	  if (((tableData.getValueAt(2, 1).toString()).equals("Coop / Comp")==true) 
+             			  	     && (tableData.getValueAt(3, 1).toString()).equals("")==true)
+             			  	  {
+             			  	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+             			  	  }
+             			  	  else
              			  	  
+             			  	  if (((tableData.getValueAt(2, 1).toString()).equals("Cons / Diss")==true) 
+             			  	     && (tableData.getValueAt(3, 1).toString()).equals("")==true)
+             			  	  {
+             			  	  	JOptionPane.showMessageDialog 
+		            		    (null,"Choose Table of Games ","Warning",JOptionPane.WARNING_MESSAGE);
+             			  	  }
+             			  	  else
+             			  	  {
 	             			 	  alfaStep=180/(nCluster-1);
 	 		   	  		    
 		 		   	   			  int idd=Integer.parseInt(clust.getId());
@@ -7856,6 +8192,7 @@ public void consent()
 		             			 	  else
 		             			 	  if (distribution.equals("First Neighbor")==true)
 		             			 	  {
+		             			 	  	freccia_but.setSelected(true);
 		             			 	  		MyEdge edgess=new MyEdge();
 						             		if ((hId!=-1) && (iId!=-1))
 											{
@@ -7924,8 +8261,15 @@ public void consent()
 		             			   
 		             			 }
 		             			 	
-	             			 		
+	             			 	}	
 	             			}
+	             			else
+	             		    if ((nCluster>1) && ((tableData.getValueAt(2, 1).toString()).equals("")==true))
+	             			{
+	             				JOptionPane.showMessageDialog 
+            		    (null,"Choose Interaction Mode ","Warning",JOptionPane.WARNING_MESSAGE);
+	             			}
+	             			
           			     }
              			  
              			    
@@ -8236,6 +8580,7 @@ public void consent()
 	    {
 	    	  String filename=new String("");
 	          FileDialog fd = new FileDialog(frame, "Open ", FileDialog.LOAD);
+	          
 	          fd.setFile("*.xml"); 
               fd.setVisible(true); 
               if ((fd.getFile()!=null)&&(fd.getDirectory()!=null))  
@@ -8600,7 +8945,7 @@ class OptionPan extends JFrame
 {  
 	JFrame frameOp;
 	public final Color color=Color.WHITE;
-	JCheckBox ch1,ch2;  
+	JCheckBox ch1,ch2,ch3;  
 	JButton b;  
 	public int opt;
 	
@@ -8632,7 +8977,7 @@ class OptionPan extends JFrame
 		b=new JButton("Save");  
 		b.setBounds(100,150,80,30);  
 	
-		  b.setForeground(Color.red);
+		  b.setForeground(Color.green);
 		frameOp.add(ch1);
 		frameOp.add(ch2);
 		frameOp.add(b);  
@@ -8704,5 +9049,117 @@ class OptionPan extends JFrame
 	
 
   }
+    /* 
+     * @return int selected item 
+    */
+  	public void openPanCurve()
+	{  
+	   JRadioButton ch1 = new JRadioButton("Expected Values");
+		   frameOp=new JFrame(); 
+		   
+	//	ch1=new JCheckBox ("Expected Values");  
+		ch1.setBounds(65,50,200,30);  
+		  
+		  JRadioButton ch2 = new JRadioButton("Second Order Moment");
+		
+		ch2.setBounds(65,100,200,30);  
+		
+		
+	JRadioButton	ch3=new JRadioButton ("Skewness");  
+		ch3.setBounds(65,150,200,30);  
+		
+		  JPanel panel = new JPanel(new GridLayout(3, 2));
+		  
+		  //frame.setLayout(null);  
+		//frame.setVisible(true);  
+		frameOp.setBackground(color);
+		panel.setBackground(color);
+		ch1.setBackground(color);
+		ch2.setBackground(color);
+		ch3.setBackground(color);
+		ch1.setForeground(Color.blue);
+		ch2.setForeground(Color.blue);
+		ch3.setForeground(Color.blue);
+		
+		
+		
+		b=new JButton("Draw");  
+		b.setBounds(100,200,80,30);  
+	
+	ButtonGroup bGroup = new ButtonGroup();
+    bGroup.add(ch1);
+    bGroup.add(ch2);
+    bGroup.add(ch3);
+ 
+    ch1.setEnabled(true);
+	
+		  b.setForeground(Color.blue);
+
+		frameOp.add(ch1);
+		frameOp.add(ch2);
+		frameOp.add(ch3);
+		frameOp.add(b);  	  
+		frameOp.setSize(300,300); 
+		
+		frameOp.setTitle("Moment Graphics");
+		
+		Border border = BorderFactory.createTitledBorder(null,"Choose Graphic",0,0,null,Color.blue);
+		
+		panel.setBorder(border);
+		
+		frameOp.add(panel);
+		frameOp.setVisible(true);
+		
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		
+		Container contentPane = frameOp.getContentPane();
+		    contentPane.add(panel);
+
+
+	
+
+	b.addActionListener(new ActionListener() 
+    {
+	            @Override
+	           
+		public void actionPerformed(ActionEvent e)
+		{  
+		  	Demo dem=new Demo();
+			 String s=getSelectedButtonText(bGroup) ;
+			 	System.out.println(s);
+			 if (s.equals("Expected Values")==true)
+			 {
+			 dem.draw1OM();
+			 
+			 }
+			 else
+			 if (s.equals("Second Order Moment")==true)
+			 {
+		       dem.draw2OM();
+			 }
+			 else
+			 if (s.equals("Skewness")==true)
+			 {
+			   dem.draw3OM();
+			 }
+			 	
+			  frameOp.setVisible(false); 
+		}
+	} );  
+  }
+  
+  public String getSelectedButtonText(ButtonGroup buttonGroup) {
+        for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
+    }
 }
 
