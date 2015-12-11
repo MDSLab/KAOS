@@ -106,6 +106,7 @@ import java.net.URL;
 
 public class Demo 
 {
+      public static final int nMax=50;
 //	public Vector<Nodo> n=new Vector<Nodo>();//vector dei nodi  inseriti nel grafico
 //	public Vector<Edge> a=new Vector<Edge>();//vector degli archi inseriti nel grafico
   
@@ -150,6 +151,7 @@ public class Demo
 	public static double emme2[];
 	public static double emme3[];
 	public static double df[];
+	public static boolean isEta; //se true indica che gia esiste la matrice eta degli encounter rate
 	
 	public static JToolBar toolbar1;
 	
@@ -194,7 +196,7 @@ public class Demo
    public static String colorValue; //colore selezionato in JColorChooser relativo allo sfondo dei clusters
    public JGraphTXAdapter<String, MyEdge> g ;
    
-   public static final int nMax=100;
+
    
    public static Color color0,color1,color2;
   
@@ -208,6 +210,196 @@ public class Demo
    public static boolean okSolution; // it's true if solution has been calculated
    public    JMenuItem saveSolMi;
    public static String funct=new String();//parsed input function used to calculate B Matrix    
+   public static String encounterMode=new String();
+   
+   /* Print Symmetric Matrix
+      * @param matrix double matrix to make symmetric
+      * @param row Matrix number rows
+      * @param col Matrix number columns
+      *
+     * @param title of matrix
+   */
+    private static void showMatrix(double [][] matrix, String title, int row, int col )
+    {
+        int temp, temp1;             //temprature variable
+        
+       JPanel choosePanel [] = new JPanel [matrix.length+1];
+       choosePanel[0] = new JPanel ();
+       choosePanel[0].add( new JLabel (title) );
+   
+       for(temp = 1; temp <= matrix.length; temp++)
+       {
+           choosePanel[temp] = new JPanel();
+           
+           
+           for(temp1 = 0; temp1 < matrix[0].length; temp1++)
+           {
+               if(matrix[temp-1][temp1] == -0)
+               {
+                  matrix[temp-1][temp1] = 0; 
+               }
+               choosePanel[temp].add(new JLabel(String.format("%.2f", matrix[temp-1][temp1])));
+               
+               if(temp1 < matrix[0].length -1)
+               {
+               choosePanel[temp].add(Box.createHorizontalStrut(15)); // a spacer
+               }
+               
+           }//end col loop
+           
+       }//end row loop
+       
+    if(col == 0 || row == 0)
+    {
+        JOptionPane.showMessageDialog(null, "You haven't entered any matrix");
+    }
+    else
+    {
+    
+    JOptionPane.showMessageDialog(null, choosePanel, null, 
+            JOptionPane.PLAIN_MESSAGE, null);
+    }  
+    }//end show Matrix
+   
+   
+   
+   private static boolean isDouble (String str)
+   {
+       int temp;
+       if (str.length() == '0')
+           return false;
+       
+       for(temp = 0; temp < str.length();temp++)
+       {
+           if(str.charAt(temp) != '+' && str.charAt(temp) != '-'
+                   && str.charAt(temp) != '.'
+                   && !Character.isDigit(str.charAt(temp))
+                   )
+           {
+               return false;
+           }
+       }
+       return true;
+   }
+   
+   
+    /* Set all null elements to zero
+     * @param field input texfield
+     
+    */
+     private static void checkTextField (JTextField field [][] )
+     {
+         for(int temp = 0; temp < field.length; temp++)
+         {
+             for(int temp1 = 0; temp1 < field[0].length; temp1++)
+             {
+                 if(field[temp][temp1].getText().equals(""))
+                 field[temp][temp1].setText("0");
+             }
+         }
+     }
+   
+    /* Setting Symmetric matrix's elementis
+     * @param matrix double matrix to make symmetric
+     * @param row Matrix number rows
+      * @param col Matrix number columns
+     * @param title of matrix
+    */
+    private static boolean setElements(double matrix [][], String title, int row, int col )
+    {
+        int temp, temp1;             
+        String tempString;
+         JTextField inputField [][];
+         int result;
+         
+  
+     	 double myMatrix [][]=eta;
+       double tempMatrix [][]=eta; 
+
+     
+    	JPanel choosePanel [] = new JPanel[row+2];
+   		 int lastCol=-1;int  lastRow =-1;
+         
+        
+      
+       choosePanel[0] = new JPanel();
+       choosePanel[0].add(new Label(title ));
+       choosePanel[choosePanel.length-1] = new JPanel();
+       //choosePanel[choosePanel.length-1].add(new Label("consider space field as zeros"));
+       inputField  = new JTextField [matrix.length][matrix[0].length];
+        
+       
+       //lenght loop
+       for(temp = 1; temp <= matrix.length; temp++)
+       {
+           choosePanel[temp] = new JPanel();
+           
+           
+           for(temp1 = 0; temp1 < matrix[0].length; temp1++)
+           {
+               inputField [temp-1][temp1] = new JTextField(3);
+               choosePanel[temp].add(inputField [temp-1][temp1]);
+               inputField[temp-1][temp1].setText(String.valueOf(eta[temp-1][temp1]));
+               
+               //permette di inserire solo matrice triangolare superiore
+               if ((temp1<temp) && (temp-1!=temp1))
+               {
+               inputField[temp-1][temp1].setEditable(false);
+               
+               }
+               
+               if(temp1 < matrix[0].length -1)
+               {
+               choosePanel[temp].add(Box.createHorizontalStrut(15)); // a spacer
+               }
+               
+           }//end col loop
+           
+       }//end row loop
+       
+       result = JOptionPane.showConfirmDialog(null, choosePanel, 
+               null, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+     
+      
+      if(result == 0)
+      {
+          checkTextField(inputField);
+       for(temp = 0; temp < matrix.length; temp++)
+       {
+        for(temp1 = 0; temp1 < matrix[0].length; temp1++)
+            {
+                tempString = inputField[temp][temp1].getText();
+                
+                
+                 if(isDouble(tempString))
+                {
+                matrix [temp][temp1] = Double.parseDouble(inputField[temp][temp1].getText());
+               
+                if (temp1<temp)
+                {
+                matrix [temp][temp1]= matrix[temp1][temp]; //copia i valori simmetrici sotto la diagonale principale
+                }
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "You entered wrong elements");
+                    
+                    //backup
+                    col = lastCol;
+                    row = lastRow;
+                    
+                    return false;
+                }                      
+            }
+       }
+       isEta=true;
+       return true;
+    }
+      else
+          return false;
+    
+      
+    }//end get Inputs
    
    
     /** Calcutate the probability density f(x,mu,sigma) of the Normal (Gaussian) Distribution 
@@ -216,7 +408,7 @@ public class Demo
       * @param s - standard deviation (sigma)
       * @return value - Gaussian probability density f(x,mu,sigma)
    	**/ 
-   public double gaussValue(int x, double m, double s) 
+   public double valueGauss(int x, double m, double s) 
    {
      double z=-((x-m)*(x-m))/(2*s*s);
      double value = (1.0/(s*Math.sqrt(2*Math.PI)))*Math.pow(Math.E,z);
@@ -680,7 +872,7 @@ public class Demo
 		            	   	else
 		            	   	if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		            	   	{
-		            	   	  //matrice B già calcolata con il metodo grafico
+		            	   	  //matrice B gia calcolata con il metodo grafico
             		           solution();
             		        }
             		        
@@ -1757,6 +1949,131 @@ public void unif2BCD(int iId, int hId)
    
    }//end calculateB
     
+/** Calculate the B Matrix complete with Gaussian Table of Games
+   	* @param tempo index of timestep
+    **/  
+   public void calculateBGauss(int tempo)
+   {
+   	  
+   	  int n=Math.round((nCluster-1)/2); 
+   	 
+   	   //double functions= function(funct);
+   			//resetB(nCluster);
+		for(int i=0; i<nCluster; i++) 
+		for(int h=0; h<nCluster; h++) 
+		for(int k=0; k<nCluster; k++) 
+		{
+			B[h][k][i] = 0.0; 
+	
+		}
+		
+		
+		
+		for(int i=0; i<nCluster; i++) //1 indice di matrice = 
+		{
+		for(int h=0; h<nCluster; h++) //2 indice di riga
+		{
+		for(int k=0; k<nCluster; k++) //3 indice colonna
+		{
+			if  ( (h==k) && (h==i) )
+			{ B[i][h][k]= 1.0; } 
+			
+			//scelta tra competizione e cooperazione
+			
+			if (Math.abs(k-h)<mu) //competizione
+			{
+			     if ( (h==0) && (h!=k) && (i==h) )
+			     {
+			        B[i][h][k] = 1.0;
+			     }
+			     
+			     if ( (h==nCluster-1) && (h!=k) && (i==h) )
+			     {
+			        B[i][h][k] = 1.0;
+			     }
+			     
+			     if ( (h!=0) && (h!=k) && (h<k) )
+			     {
+			     	for (int j=0;j<h;j++)
+			     	{
+			          B[i][h][k] = valueGauss(j,average,deviation);
+			          //B[i][h][k] = valueGauss(j,((h-j)/2),deviation);
+			         // B[i][h][k] = valueGauss(j,((h)/2),deviation);
+			        }
+			     }
+			     
+			    
+			    
+			     if ( (h!=nCluster-1) && (h>k) && (h!=k) )
+			     {
+			        for (int j=h;j<nCluster-1;j++)
+			     	{
+			          B[i][h][k] = valueGauss(j,average,deviation);
+			         // B[i][h][k] = valueGauss(j,((nCluster-j)/2),deviation);
+			         //B[i][h][k] = valueGauss(j,((nCluster-1-h)/2),deviation);
+			        }
+			       
+			     }
+			 
+			 
+			}
+			else
+			//coperazione
+			{
+				//System.out.println(i+" "+h+" "+k);
+			     if (h<k)
+			     {
+			       for (int j=h;j<k;j++)
+			     	{
+			          B[i][h][k] = valueGauss(j,average,deviation);
+			           //B[i][h][k] = valueGauss(j,((k-j)/2),deviation);
+			           //B[i][h][k] = valueGauss(j,((k-h)/2),deviation);
+			        }
+			        
+			        
+			     }
+			     
+			     
+			     //triangolare inferiore
+			     if (h>k)
+			     {
+			       for (int j=k;j<h;j++)
+			     	{
+			           B[i][h][k] = valueGauss(j,average,deviation);
+			           //B[i][h][k] = valueGauss(j,((h-j)/2),deviation);
+			           //B[i][h][k] = valueGauss(j,((h-k)/2),deviation);
+			        }
+			     
+			     }
+			     
+		    }
+		 }
+		
+		
+		}
+	
+    	}
+	
+	
+		
+		//fine calcolo matrici B
+   
+   		double sommab=0;
+	  for(int i=0; i<nCluster; i++) 
+	  {
+	  	sommab=0;
+	  	for(int h=0; h<nCluster; h++) 
+	    //for(int k=0; k<nCluster; k++) 
+	    {
+	    	sommab=sommab+B[i][i][h];
+	     // System.out.println("B "+"( "+h+" "+h+" "+i+" = "+B[h][h][i]);
+	    }   
+	  
+	  }
+	  //System.out.println("SOMMA B: "+sommab);
+   
+   }//end calculateBGauss
+   
        /** Calculate the B Matrix complete to Consensus/Dissent  Non Linear First Neighbor
    	* @param tempo index of timestep
     **/  
@@ -1921,9 +2238,13 @@ public void unif2BCD(int iId, int hId)
       int n=Math.round((nCluster-1)/2);
       System.out.println("calcola soluzione");
       
-       resetEta(nCluster);
-              
+       //resetEta(nCluster);
+       
+       if ((tableData.getValueAt(0, 1).toString()).equals("Constant")==true)
+       {       
         setEta(nCluster,eta0);
+       }
+        
         df=new double[nCluster];      
       
       for (int tempo=1;tempo<nt;tempo++)
@@ -1948,6 +2269,13 @@ public void unif2BCD(int iId, int hId)
 		            	   	    calculateBLU(0);     //soluzione uniforme e lineare
 		            	   	   
 		            	      }
+		            	      else
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Gaussian")==true))		
+		            	   	  {	
+		            	   	   
+		            	   	    calculateBGauss(0);     //soluzione uniforme e lineare
+		            	   	   
+		            	      }
 		            	   	  
 		}
 		else
@@ -1964,13 +2292,20 @@ public void unif2BCD(int iId, int hId)
 		            	   	    calculateBLUCD(0);     //soluzione uniforme e lineare
 		            	   	   
 		            	      }
+		            	      else
+		            	      if ((modality.equals("Cooperation/Competition")==true) && (distribution.equals("Gaussian")==true))		
+		            	   	  {	
+		            	   	   
+		            	   	    calculateBGauss(0);     //soluzione uniforme e lineare
+		            	   	   
+		            	      }
 		            	   	  
 		}
 		else
 		if ((tableData.getValueAt(2, 1).toString()).equals("User Defined")==true)
 		{
 			modality="User Defined";
-		    //matrice B già calcolata con il metodo grafico
+		    //matrice B gia calcolata con il metodo grafico
             
         }
     	
@@ -4077,10 +4412,17 @@ public void cooperation_()
   public void viewTabData (Vector<String> values)
   {
   	List<TableCellEditor> editors = new ArrayList<TableCellEditor>(1);
+  	
+  	String[] items0 = { "Constant", "User Defined"};
     
     String[] items1 = { "User Defined", "Coop / Comp","Cons / Diss"};
     
     String[] items2 = { "Uniform","First Neighbor","Gaussian"};
+    
+    JComboBox comboBox0 = new JComboBox(items0);
+        DefaultCellEditor dce0 = new DefaultCellEditor( comboBox0);
+       
+        editors.add( dce0 );
         
         
         JComboBox comboBox1 = new JComboBox(items1);
@@ -4138,16 +4480,21 @@ public void cooperation_()
 			//  Determine editor to be used by row
             public TableCellEditor getCellEditor(int row, int column)
             {
+            	tableData.setRowHeight(0,18);
               	tableData.setRowHeight(2,18);
               	tableData.setRowHeight(3,18);
                 int modelColumn = convertColumnIndexToModel( column );
+                
+                if (modelColumn == 1 && row ==0)
+                    return editors.get(0); //abilita tendina mode
+                else
 
                 if (modelColumn == 1 && row ==2)
-                    return editors.get(0); //abilita tendina mode
+                    return editors.get(1); //abilita tendina mode
                 else
                 if (modelColumn == 1 && row ==3 && (modality.equals("User Defined")==false))
                {
-                    return editors.get(1); //abilita tendina distribution
+                    return editors.get(2); //abilita tendina distribution
                }
                 else
                     return super.getCellEditor(row, column);
@@ -4165,6 +4512,77 @@ public void cooperation_()
 			
    };
    
+   
+   //mode selection listener
+   	comboBox0.addActionListener(new ActionListener() 
+   	{
+
+			public void actionPerformed(ActionEvent e) 
+			{
+				final long serialVersionUID = 1L;
+				double newEta=eta0;
+				JComboBox val = (JComboBox) e.getSource();
+				String selected = (String) val.getSelectedItem();
+				 
+				if (selected.equals("Constant"))
+				{
+				  
+				       boolean ok=false;
+				       while (ok==false)
+				       {
+				        try
+				        {
+				           newEta=Double.parseDouble(JOptionPane.showInputDialog(null, "Encounter Rate: ",eta0));
+				        
+				       if (newEta>=0)
+				       {
+				           ok=true;
+				           isEta=false;
+				           eta0=newEta;
+				           encounterMode=String.valueOf(eta0);
+				          tableData.setValueAt(encounterMode, 0, 1); 
+				        }
+				      }
+				      catch
+				      (NumberFormatException exctext)
+				      {
+				       JOptionPane.showMessageDialog(null, "Enter a valid number greater than 0");
+				       ok=false;
+				       isEta=false;
+				      }
+				      catch
+				      (Exception exctext)
+				      {
+				     		      	
+				      }
+			      
+			         }
+			         
+				}
+				else
+				if (selected.equals("User Defined"))
+				{
+					if (nCluster==0)
+					{
+					  JOptionPane.showMessageDialog(null, "Cluster number is equal to 0. Please insert any cluster!");
+					}
+					else
+					{
+						encounterMode="User Defined";
+					     if (isEta==false)
+				         {
+				         	eta = new double [nCluster][nCluster];
+				         	isEta=true;
+				         }
+					  
+				        setElements(eta, "Symmetric Encounter Rate Matrix",nCluster,nCluster );
+				      showMatrix(eta, "Symmetric Encounter Rate Matrix",nCluster,nCluster);			      
+			         }
+			     }			 
+		   }
+  }); //end combonbox0
+  
+  
     //mode selection listener
    	comboBox1.addActionListener(new ActionListener() 
    	{
@@ -4371,17 +4789,21 @@ public void cooperation_()
 				else
 				if (selected.equals("Gaussian"))
 				{
+					
 					distribution="Gaussian";
 				   displayGauss();
 					 System.out.println("gauss");
+					 /*
 					 Vector<Double> g=new Vector<Double>();
 					 
 					 for (int i=0;i<200;i++)
 					 {
-					 	g.add(gaussValue(i,average,deviation)) ;
+					 	g.add(valueGauss(i,average,deviation)) ;
 				     }
 					 GraphCurve gc=new GraphCurve(g);
       			 	gc.drawCurve(g,"Gaussian");
+      			 	*/
+				
 				}//end gauss
 				
 			}
@@ -4456,6 +4878,7 @@ public void cooperation_()
         }
       	public void editingStopped(ChangeEvent e) 
       	{
+      		
            	String cellEta0=tableData.getValueAt(0, 1).toString();        	
           	String cellN=tableData.getValueAt(1, 1).toString();
             String cellMode=tableData.getValueAt(2, 1).toString();
@@ -5838,10 +6261,12 @@ public void cooperation_()
     
     public void go()  
     {  
-    	
+      eta = new double [nMax][nMax];   
+      isEta=false; 
       funct=new String();
       funct="0";
       okSolution=false;
+      
       						
     
       screenX=(int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
@@ -5870,6 +6295,7 @@ public void cooperation_()
        resetB(nMax);
        modality="";
        distribution="";
+       encounterMode=String.valueOf(eta0);
        // resetF(nMax);
        titleCentral="Initial Condition";
        
