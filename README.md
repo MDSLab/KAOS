@@ -3,14 +3,8 @@ A kinetic theory of active particles modeling and analysis tool
 
 To compile under Linux:
 
-    $cd Kaos
- 
-    $javac *.java
- 
-    $jar cvf ../Kaos.jar *.class
- 
-    $cd ..
- 
+    $javac Kaos/*.java layout/*.java *.java
+
     $jar -cvmf MANIFEST.MF kaos.jar  *.class Kaos icons org layout com
  
  
