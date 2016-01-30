@@ -106,7 +106,7 @@ import java.net.URL;
 
 public class Demo 
 {
-      public static final int nMax=50;
+      public static final int nMax=100;
 //	public Vector<Nodo> n=new Vector<Nodo>();//vector dei nodi  inseriti nel grafico
 //	public Vector<Edge> a=new Vector<Edge>();//vector degli archi inseriti nel grafico
   
@@ -212,17 +212,15 @@ public class Demo
    public static String funct=new String();//parsed input function used to calculate B Matrix    
    public static String encounterMode=new String();
    
-   /* Print Symmetric Matrix
+   /** Print Symmetric Matrix
       * @param matrix double matrix to make symmetric
       * @param row Matrix number rows
-      * @param col Matrix number columns
-      *
-     * @param title of matrix
+      * @param title of matrix
+      * @param col Matrix number columns    
    */
     private static void showMatrix(double [][] matrix, String title, int row, int col )
     {
-        int temp, temp1;             //temprature variable
-        
+       int temp, temp1;             //temprature variable       
        JPanel choosePanel [] = new JPanel [matrix.length+1];
        choosePanel[0] = new JPanel ();
        choosePanel[0].add( new JLabel (title) );
@@ -262,7 +260,9 @@ public class Demo
     }//end show Matrix
    
    
-   
+     /** Check if string input is a valid double number 
+      * @param str string input 
+      */
    private static boolean isDouble (String str)
    {
        int temp;
@@ -283,10 +283,9 @@ public class Demo
    }
    
    
-    /* Set all null elements to zero
-     * @param field input texfield
-     
-    */
+    /** Set all null Matrix elements to zero
+     * @param field input texfield   
+     */
      private static void checkTextField (JTextField field [][] )
      {
          for(int temp = 0; temp < field.length; temp++)
@@ -299,12 +298,12 @@ public class Demo
          }
      }
    
-    /* Setting Symmetric matrix's elementis
+    /** Setting Symmetric matrix's elements
      * @param matrix double matrix to make symmetric
      * @param row Matrix number rows
-      * @param col Matrix number columns
+     * @param col Matrix number columns
      * @param title of matrix
-    */
+     */
     private static boolean setElements(double matrix [][], String title, int row, int col )
     {
         int temp, temp1;             
@@ -314,100 +313,92 @@ public class Demo
          
   
      	 double myMatrix [][]=eta;
-       double tempMatrix [][]=eta; 
-
-     
-    	JPanel choosePanel [] = new JPanel[row+2];
-   		 int lastCol=-1;int  lastRow =-1;
-         
-        
-      
-       choosePanel[0] = new JPanel();
-       choosePanel[0].add(new Label(title ));
-       choosePanel[choosePanel.length-1] = new JPanel();
-       //choosePanel[choosePanel.length-1].add(new Label("consider space field as zeros"));
-       inputField  = new JTextField [matrix.length][matrix[0].length];
-        
-       
-       //lenght loop
-       for(temp = 1; temp <= matrix.length; temp++)
-       {
-           choosePanel[temp] = new JPanel();
-           
-           
-           for(temp1 = 0; temp1 < matrix[0].length; temp1++)
-           {
-               inputField [temp-1][temp1] = new JTextField(3);
-               choosePanel[temp].add(inputField [temp-1][temp1]);
-               inputField[temp-1][temp1].setText(String.valueOf(eta[temp-1][temp1]));
-               
-               //permette di inserire solo matrice triangolare superiore
-               if ((temp1<temp) && (temp-1!=temp1))
-               {
-               inputField[temp-1][temp1].setEditable(false);
-               
-               }
-               
-               if(temp1 < matrix[0].length -1)
-               {
-               choosePanel[temp].add(Box.createHorizontalStrut(15)); // a spacer
-               }
-               
-           }//end col loop
-           
-       }//end row loop
-       
-       result = JOptionPane.showConfirmDialog(null, choosePanel, 
-               null, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-     
-      
-      if(result == 0)
-      {
-          checkTextField(inputField);
-       for(temp = 0; temp < matrix.length; temp++)
-       {
-        for(temp1 = 0; temp1 < matrix[0].length; temp1++)
-            {
-                tempString = inputField[temp][temp1].getText();
-                
-                
-                 if(isDouble(tempString))
-                {
-                matrix [temp][temp1] = Double.parseDouble(inputField[temp][temp1].getText());
-               
-                if (temp1<temp)
-                {
-                matrix [temp][temp1]= matrix[temp1][temp]; //copia i valori simmetrici sotto la diagonale principale
-                }
-                }
-                else
-                {
-                    JOptionPane.showMessageDialog(null, "You entered wrong elements");
-                    
-                    //backup
-                    col = lastCol;
-                    row = lastRow;
-                    
-                    return false;
-                }                      
-            }
-       }
-       isEta=true;
-       return true;
-    }
-      else
-          return false;
-    
-      
+	       double tempMatrix [][]=eta;    
+	       JPanel choosePanel [] = new JPanel[row+2];
+	   	   int lastCol=-1;int  lastRow =-1;    
+	       choosePanel[0] = new JPanel();
+	       choosePanel[0].add(new Label(title ));
+	       choosePanel[choosePanel.length-1] = new JPanel();
+	       //choosePanel[choosePanel.length-1].add(new Label("consider space field as zeros"));
+	       inputField  = new JTextField [matrix.length][matrix[0].length];     
+	       
+	       //lenght loop
+	       for(temp = 1; temp <= matrix.length; temp++)
+	       {
+	           choosePanel[temp] = new JPanel();
+	           
+	           
+	           for(temp1 = 0; temp1 < matrix[0].length; temp1++)
+	           {
+	               inputField [temp-1][temp1] = new JTextField(3);
+	               choosePanel[temp].add(inputField [temp-1][temp1]);
+	               inputField[temp-1][temp1].setText(String.valueOf(eta[temp-1][temp1]));
+	               
+	               //permette di inserire solo matrice triangolare superiore
+	               if ((temp1<temp) && (temp-1!=temp1))
+	               {
+	               inputField[temp-1][temp1].setEditable(false);
+	               
+	               }
+	               
+	               if(temp1 < matrix[0].length -1)
+	               {
+	               choosePanel[temp].add(Box.createHorizontalStrut(15)); // a spacer
+	               }
+	               
+	           }//end col loop
+	           
+	       }//end row loop
+	       
+	       result = JOptionPane.showConfirmDialog(null, choosePanel, 
+	               null, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+	     
+	      
+	      if(result == 0)
+	      {
+	          checkTextField(inputField);
+	       for(temp = 0; temp < matrix.length; temp++)
+	       {
+	        for(temp1 = 0; temp1 < matrix[0].length; temp1++)
+	            {
+	                tempString = inputField[temp][temp1].getText();
+	                
+	                
+	                 if(isDouble(tempString))
+	                {
+	                matrix [temp][temp1] = Double.parseDouble(inputField[temp][temp1].getText());
+	               
+	                if (temp1<temp)
+	                {
+	                matrix [temp][temp1]= matrix[temp1][temp]; //copia i valori simmetrici sotto la diagonale principale
+	                }
+	                }
+	                else
+	                {
+	                    JOptionPane.showMessageDialog(null, "You entered wrong elements");
+	                    
+	                    //backup
+	                    col = lastCol;
+	                    row = lastRow;
+	                    
+	                    return false;
+	                }                      
+	            }
+	       }
+	       isEta=true;
+	       return true;
+		  }
+		      else
+		          return false;
     }//end get Inputs
    
    
-    /** Calcutate the probability density f(x,mu,sigma) of the Normal (Gaussian) Distribution 
+    /** Calcutate and turn the probability density f(x,mu,sigma) of the Normal (Gaussian) Distribution 
       * @param x - indipendent variable
       * @param m - expected value mu (expectation)
       * @param s - standard deviation (sigma)
       * @return value - Gaussian probability density f(x,mu,sigma)
-   	**/ 
+   	*/ 
    public double valueGauss(int x, double m, double s) 
    {
      double z=-((x-m)*(x-m))/(2*s*s);
@@ -415,9 +406,9 @@ public class Demo
      return value;  
    }
    
-   /*
+   /**
     * Draw Graph of First Order Moment
-   */
+    */
    public void draw1OM()
    {
    	           int delta=(int)(nt/tmax);
@@ -436,9 +427,9 @@ public class Demo
       			 	gc.drawCurve(enneV,text);
     }
     
-    /*
-    * Draw Graph of Second Order Moment
-   */
+    /**
+     * Draw Graph of Second Order Moment
+     */
    public void draw2OM()
    {
    	           int delta=(int)(nt/tmax);
@@ -456,9 +447,9 @@ public class Demo
       				gc2=new GraphCurve(enne2V);
       			 	gc2.drawCurve(enne2V,text);
     }
-    /*
-    * Draw Graph of Second Order Moment or Skewness
-   */
+    /**
+     * Draw Graph of Second Order Moment or Skewness
+     */
    public void draw3OM()
    {
    	           int delta=(int)(nt/tmax);
@@ -479,7 +470,7 @@ public class Demo
    
    
    /** Save Project in a XML file
-   	**/ 
+   	*/ 
    	public void saveXmlFile()
    {
    	          if (nCluster>0)
@@ -519,7 +510,7 @@ public class Demo
    
    /** Parse  the Function typed
       * @param filename - String name of chm help file you would like to open
-   	**/ 
+   	*/ 
    public void openChmFile(String filename) 
    {
    		   
@@ -547,7 +538,7 @@ public class Demo
     /** Parse  the Function typed
       * @param fx - String function to be parsed
       * @return double function value 
-   	**/ 
+   	*/ 
    	public static double function(String fx) 
 	{
 		JEP myParser = new JEP();
@@ -606,7 +597,7 @@ public class Demo
 	
 	/** Open  JPG image from the specified file
 	  * @param filename - a String specifying a filename or path
-   	**/  
+   	*/  
 	public void openJPG(String filename) 
 	{
 	  try
@@ -632,7 +623,7 @@ public class Demo
 	
     /** Open  PDF file  from the specified file
 	  * @param filename - a String specifying a filename or path
-   	**/  
+   	*/  
     public void openPDF(String filename)
     {
       try 
@@ -663,7 +654,7 @@ public class Demo
     }
        
    /** Create text file of Cluster Probabilities (Solution) to be saved 
-   **/
+   */
    public void saveProbTxt()
    {
    	 vecTxt=new Vector<String>();
@@ -689,7 +680,7 @@ public class Demo
    }
    
       /** Create text file of Expected Values to be saved 
-       **/
+       */
    public void saveExpecTxt()
    {
    	 String nameModel= "Model Name: "+saveFileAs.substring(saveFileAs.lastIndexOf("\\")+1,saveFileAs.length());
@@ -698,7 +689,7 @@ public class Demo
      vecTxt.add("\nTime\tE(t)");    
      
      enneV=new Vector<Double>();
-            	  int i=0; 
+            	  int i=1; 
             	  int delta=(int)(nt/tmax);
                 do
                {
@@ -727,7 +718,7 @@ public class Demo
    }
    
    /** Create 2 text files: Cluster Probabilities and Expected Values 
-       **/
+    */
    public void saveEFTxt()
    {
    	 vecTxt=new Vector<String>();
@@ -783,10 +774,10 @@ public class Demo
      writeTxt(name2,vecTxt);
    }
    
-    /** Save a txt file with specified name namef
+   /** Save a txt file with specified name namef
    	* @param namef name of the TXT file to be saved
     * @param  vett  Vector of string that the file should contain
-    **/ 
+    */ 
    	public static void writeTxt (String namef,Vector vett)
 	{
 		int i;
@@ -812,7 +803,7 @@ public class Demo
    
    
    /** Start Solution
-    **/ 
+    */ 
    public void  start()
    {
    	if ((modality.equals("")==true) || ((tableData.getValueAt(2, 1).toString()).equals("")==true) )
@@ -966,7 +957,7 @@ public class Demo
    /** Print the 3D Matrix
    	* @param n number of clusters of the model
     * @param A[][][]  double 3D Matrix to be printed
-    **/ 
+    */ 
    public void  printB (double[][][]  A,int n)
    {
         for(int i=0; i<n; i++) 
@@ -984,10 +975,10 @@ public class Demo
 		}
   }
    
-    /** Calculate the Gap function
+   /** Calculate the Gap function
    	* @param nC number of clusters of the model
     * @return  double  Value of the Gap function
-    **/ 
+    */ 
    public double enneF(int nC)
    {
    	
@@ -1010,10 +1001,10 @@ public class Demo
      return summ;
    }
    
-    /** Calculate the First Order Moment E1
+   /** Calculate the First Order Moment E1
    	* @param nC number of clusters of the model
     * @return  double  Value of the First Order Moment
-    **/  
+    */  
 	 public double emmeF(int nC)
    {
    	int n=Math.round((nC-1)/2); 
@@ -1033,7 +1024,7 @@ public class Demo
    /** Calculate the Second Order Moment E2
    	* @param nC number of clusters of the model
     * @return  double  Value of the Second Order Moment
-    **/  
+    */  
 	 public double emme2F(int nC)
    {
    	int n=Math.round((nC-1)/2); 
@@ -1050,10 +1041,10 @@ public class Demo
      return sum;
    }
    
-      /** Calculate the Skewness E3
+   /** Calculate the Skewness E3
    	* @param nC number of clusters of the model
     * @return  double  Value of the Skewness
-    **/  
+    */  
 	public double emme3F(int nC)
    {
    	int n=Math.round((nC-1)/2); 
@@ -1071,8 +1062,8 @@ public class Demo
    }
    
    
-       /** Open Menu windows to set parameter expected value and standard deviation in Gaussian Distribution
-   	 **/  
+    /** Open Menu windows to set parameter expected value and standard deviation in Gaussian Distribution
+   	 */  
      public static void displayGauss() 
     {
     	boolean end1=false;
@@ -1210,8 +1201,8 @@ public class Demo
     
     
     
-        /** Open Menu windows to set parameter linear, non linear in First Neighbor table of games
-   	 **/  
+    /** Open Menu windows to set parameter linear, non linear in First Neighbor table of games
+   	 */  
      public static void displayFN() 
     {
     	boolean end=false;
@@ -1362,7 +1353,7 @@ public class Demo
     
    
     /** Open Menu windows to set parameter mu, linear, non linear in Coop/Competition mode
-   	 **/  
+   	 */  
      public static void displayCC() 
     {
     	boolean end=false;
@@ -1449,7 +1440,7 @@ public class Demo
    /** Set all elements of  Eta Matrix to value
    	*  @param nC - int number of clusters
    	* @param value - double Value to set all elements of Eta Matrix
-    **/  
+    */  
    public void setEta(int nC,double value)
    {
         for(int h=0; h<nC; h++) 
@@ -1463,7 +1454,7 @@ public class Demo
     *  dependent from Test & Candidate Selected
    	*  @param iId - Test cluster
    	*  @param hId - Candidate clusters
-    **/
+    */
 
 public void unif2B(int iId, int hId)
 {
@@ -1586,7 +1577,7 @@ public void unif2B(int iId, int hId)
     *  dependent from Test & Candidate Selected
    	*  @param iId - Test cluster
    	*  @param hId - Candidate clusters
-    **/
+    */
 
 public void unif2BCD(int iId, int hId)
 {
@@ -1705,9 +1696,9 @@ public void unif2BCD(int iId, int hId)
  }  
 } //end unif2BCD
    
-      /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
+   /** Calculate the B Matrix complete to Coop/Comp  Linear Uniform distribution
    	* @param tempo index of timestep
-    **/  
+    */  
     
   //matrice b corretta e costruita dal grafico 
    public void calculateBLU(int tempo)
@@ -1766,9 +1757,9 @@ public void unif2BCD(int iId, int hId)
    
    }//end calculateBLU
    
- /** Calculate the B Matrix complete to Cons/Diss  Linear Uniform distribution
+   /** Calculate the B Matrix complete to Cons/Diss  Linear Uniform distribution
    	* @param tempo index of timestep
-    **/  
+    */  
     
   //matrice b corretta e costruita dal grafico 
    public void calculateBLUCD(int tempo)
@@ -1830,7 +1821,7 @@ public void unif2BCD(int iId, int hId)
    
    /** Calculate the B Matrix complete to Coop/Comp  Non Linear First Neighbor
    	* @param tempo index of timestep
-    **/  
+    */  
    public void calculateB(int tempo)
    {
    	  
@@ -1951,7 +1942,7 @@ public void unif2BCD(int iId, int hId)
     
 /** Calculate the B Matrix complete with Gaussian Table of Games
    	* @param tempo index of timestep
-    **/  
+    */  
    public void calculateBGauss(int tempo)
    {
    	  
@@ -2076,7 +2067,7 @@ public void unif2BCD(int iId, int hId)
    
        /** Calculate the B Matrix complete to Consensus/Dissent  Non Linear First Neighbor
    	* @param tempo index of timestep
-    **/  
+    */  
    public void calculateBCD(int tempo)
    {
    	  
@@ -2198,8 +2189,8 @@ public void unif2BCD(int iId, int hId)
      
 
       
-    /** Calculate the solution of the Cluster Model 
-    **/  
+   /** Calculate the solution of the Cluster Model 
+    */  
    public void solution()
    {
    	
@@ -2240,9 +2231,10 @@ public void unif2BCD(int iId, int hId)
       
        //resetEta(nCluster);
        
-       if ((tableData.getValueAt(0, 1).toString()).equals("Constant")==true)
+       if ((tableData.getValueAt(0, 1).toString()).equals("User Defined")==false)
        {       
         setEta(nCluster,eta0);
+        System.out.println("perfetto");
        }
         
         df=new double[nCluster];      
@@ -2404,16 +2396,19 @@ public void unif2BCD(int iId, int hId)
       cb.chart(nCluster,ff,text);
       
         saveSolMi.setVisible(true);
+        
+        	
+		
       
    }
    
    
    
-    /** Convert RGB Color in Hexadecimal Color
+   /** Convert RGB Color in Hexadecimal Color
    	* @param col Color to convert 
     * col is Color type in the form:  java.awt.Color[r=255,g=255,b=0]   
     * @return  String  hexadecimal code of the color in the form: #FFFF00  
-    **/  
+    */  
    public String convertColor(Color col)
    {
    	String rgb = Integer.toHexString(col.getRGB());
@@ -2429,7 +2424,7 @@ public void unif2BCD(int iId, int hId)
     * 0 = Color of all unchecked Clusters (k clusters)
     * 1 = Color of checked Candidate cluster (h)
     * 2 = Color of checked Test cluster (i) 
-    **/
+    */
    public void changeColors(Color col,int row)
    {
    	String color=col.toString();
@@ -2463,7 +2458,7 @@ public void unif2BCD(int iId, int hId)
    
    }
    
-   /**
+/**
  * This editor pops up a color dialog to edit a cell value
  */
 class ColorTableCellEditor extends AbstractCellEditor implements TableCellEditor
@@ -2628,10 +2623,10 @@ class MyTableModel extends AbstractTableModel
         
     }
     
-  /**
+   /**
     * Change Vertex Label of graph
     * @param vec Vector of Cluster
-    **/
+    */
     public void updateLabel(Vector<Cluster> vec)
     {
        g.getModel().beginUpdate();
@@ -2657,10 +2652,10 @@ class MyTableModel extends AbstractTableModel
     
     }
     
-    /**
+   /**
     * Check if there are edges drawed in the Graph
     * @return boolean true if there are edges drawed in the Graph
-    **/
+    */
      public boolean edgePainted()
      {
        boolean trovato=false;
@@ -2680,10 +2675,9 @@ class MyTableModel extends AbstractTableModel
    }
    
    /**
-       * Check if all probability values of i-cluster column are equals to coop value
-       
-      * return boolean true if si cooperation mode - false if is competition mode
-   **/
+     * Check if all probability values of i-cluster column are equals to coop value
+     * return boolean true if si cooperation mode - false if is competition mode
+   */
    public boolean isCooperation()
    {
    	 boolean cooper=true;
@@ -2726,7 +2720,7 @@ class MyTableModel extends AbstractTableModel
  	* Parse a String [ 1 2 3;4 5 6; 7 8 9;] in a 3D Matrix 
  	* @param m String related to 3D Matrix to be parsed
  	* @param n number of rows and columns of  3D Matrix M(h,k,i)
-    **/      
+    */      
   public static void unParsing(String m,int n)
   {
   		double C[][][] = new double[n][n][n]; 
@@ -2818,53 +2812,56 @@ class MyTableModel extends AbstractTableModel
   }
     
     
-/**
+   /**
  	* Parse 3D Matrix in a String [a b c;d e f;g h i;] with: Row separator = ";" - and Column separator = " "
  	* @param m 3D Matrix to be parsed
  	* @param h row index of the 3D Matrix M(h,k,i)
  	* @param r row index of the 3D Matrix M(h,k,i)
  	* @param c row index of the 3D Matrix M(h,k,i)
  	* @return String parsing of 2D matrix related to h index 
-    **/    
+    */    
 
-public String parseMatrix(double m[][][], int h,int r,int c)
-{
-		
-    		String matrix="[";
-			for(int j=0; j<r; j++) 
-			{ 
-				for(int k=0; k<c; k++) 
-				{
-					
-					
-					//System.out.print(m[h][j][k] + " "); 
-					matrix=matrix+String.valueOf(m[h][j][k]);
-					if(k!=c-1)
-					{
-						matrix=matrix+" ";
-					}
+		public String parseMatrix(double m[][][], int h,int r,int c)
+		{
 				
-				}
-					//System.out.println("\n"); 
-				matrix=matrix+";";
-			} 
-			matrix=matrix+"]";
-		//	System.out.println(matrix); 
-    
-	     return matrix;
-
-}
- 
-public void userDefined() 
-{
-   mode="User Defined";
-   modality="User Defined";
-  if (nCluster>0)
-  {
-   
-  // resetB(nCluster);
-    
-   MyEdge edgess=new MyEdge();
+		    		String matrix="[";
+					for(int j=0; j<r; j++) 
+					{ 
+						for(int k=0; k<c; k++) 
+						{
+							
+							
+							//System.out.print(m[h][j][k] + " "); 
+							matrix=matrix+String.valueOf(m[h][j][k]);
+							if(k!=c-1)
+							{
+								matrix=matrix+" ";
+							}
+						
+						}
+							//System.out.println("\n"); 
+						matrix=matrix+";";
+					} 
+					matrix=matrix+"]";
+				//	System.out.println(matrix); 
+		    
+			     return matrix;
+		
+		}
+		
+		/**
+		 	* Draw cluster arrows following User Defined mode 
+         */    
+		public void userDefined() 
+		{
+		   mode="User Defined";
+		   modality="User Defined";
+		  if (nCluster>0)
+		  {
+		   
+		  // resetB(nCluster);
+		    
+		   MyEdge edgess=new MyEdge();
 							
 							if ((hId!=-1) && (iId!=-1))
 							{
@@ -2914,10 +2911,10 @@ public void userDefined()
 							    }
 							   }
 							}
-  }
-}
+			  }
+			}
 
-/* Set the cooperation/competition in Non-Uniform Distribution interaction mode between the clusters
+/** Set the cooperation/competition in Non-Uniform Distribution interaction mode between the clusters
 */
 
 public void cooperation()
@@ -3185,9 +3182,8 @@ public void cooperation()
 }//end cooperation
 
 
-/* Set the cooperation/competition in Uniform Distribution interaction mode between the clusters
+/** Set the cooperation/competition in Uniform Distribution interaction mode between the clusters
 */
-
 public void cooperationUnif()
 {
   MyEdge edgess;
@@ -3502,7 +3498,7 @@ public void cooperationUnif()
 
 
 
-/* Set the cooperation/competition interaction mode between the clusters
+/** Set the cooperation/competition interaction mode between the clusters
 */
 
 public void cooperation_()
@@ -3773,10 +3769,10 @@ public void cooperation_()
  }
  
   
- /**
+   /**
  	* Create a Vector named "f"  which values  are  probability equals to 1/n
  	* @param n number of clusters
- 	**/
+ 	*/
  public void setF (int n)
   {
   	f = new Vector<Double>(n);
@@ -3794,11 +3790,11 @@ public void cooperation_()
   	
   }
  
- /**
+   /**
  	* Check sum of probability clusters
  	* @param v Vector of strings to check the sum number to rounding
  	* @return true if the sum of all the elements of v vector is equal to 1; false otherwise.
- 	**/
+ 	*/
  public boolean check (Vector<Double> v)
   {
   	boolean ok=true;
@@ -3821,13 +3817,13 @@ public void cooperation_()
  	* @param d number to rounding
  	* @param p number of digits to rounding
  	* @return Double number rounded to 2 digits
- 	**/
+ 	*/
  public double round (double d, int p)
   { 		
      return Math.rint(d*Math.pow(10,p))/Math.pow(10,p); 	
   }
  
- /**
+   /**
  	* Reset 3D Matrix B	
     */
  public void resetB(int n)
@@ -3901,7 +3897,7 @@ public void cooperation_()
 
   }
  
-  /**
+   /**
  	* Reset clusters i,h 	
     */
  public void reset()
@@ -3915,7 +3911,9 @@ public void cooperation_()
   }
   
   
-  
+   /**
+ 	* Reset clusters i,h 	
+    */
   public void resizeCluster(int r,double valore)
   {
     	sessionOpen=true;
@@ -3986,7 +3984,7 @@ public void cooperation_()
   
   }
   
-    /**
+   /**
  	* Paint the background of  cluster with specific ID
  	* @param color Background color 
  	* @param id Id of specific cluster 
@@ -4234,7 +4232,7 @@ public void cooperation_()
 	}
  }
  
-    /**
+   /**
  	* Draw the clusters in a semicircle
  	* @param numCluster Number of clusters
  	* @param vec Vector containing the properties of the clusters
